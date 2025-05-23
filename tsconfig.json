@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "module": "CommonJS",                  // Cambiar de "commonjs" a "ESNext"
+      "target": "ES2022",
+      "moduleResolution": "Node",          // Asegura la resolución correcta de módulos
+      "baseUrl": "./src",                  // Punto de partida para los imports
+      "paths": {
+        "@/*": ["*"]                       // Esto crea el alias @/
+      },
+      "typeRoots": ["./src/types", "./node_modules/@types"],
+      "outDir": "./build",
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      "skipLibCheck": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+}
