@@ -6,7 +6,7 @@ export const createProductsRouter = () => {
   const productsRouter = Router()
   const productsController = new ProductsController({ model: ProductModel })
 
-  //   productsRouter.get('/', productsController.getAll)
+  productsRouter.get('/', productsController.getAll)
   //   productsRouter.get('/:id', productsController.getObject)
   productsRouter.post('/', productsController.create)
   //   productsRouter.patch('/:id', productsController.update)

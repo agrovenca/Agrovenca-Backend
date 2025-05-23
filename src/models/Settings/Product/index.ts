@@ -2,8 +2,10 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
 import { ProductCreateType } from '@/schemas/settings/products'
 import slugify from 'slugify'
+import { config } from '@/config'
 
 const prisma = new PrismaClient()
+const { ITEMS_PER_PAGE } = config
 
 async function generateUniqueSlug(text: string): Promise<string> {
   const baseSlug = slugify(text, { replacement: '-', lower: true, strict: true, trim: true })
@@ -20,6 +22,38 @@ async function generateUniqueSlug(text: string): Promise<string> {
 }
 
 export class ProductModel {
+  static async getAll(params?: { page?: number; search?: string }) {
+    const page = params?.page ?? 1
+    const search = params?.search ?? ''
+    const take = ITEMS_PER_PAGE
+    const skip = (page - 1) * ITEMS_PER_PAGE
+
+    try {
+      const whereClause: Prisma.ProductWhereInput = search
+        ? {
+            OR: [{ name: { contains: search, mode: 'insensitive' } }],
+          }
+        : {}
+
+      const [totalItems, objects] = await Promise.all([
+        prisma.product.count({ where: whereClause }),
+        prisma.product.findMany({
+          where: whereClause,
+          orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }],
+          take,
+          skip,
+        }),
+      ])
+
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
+
+      return { objects, totalItems, totalPages }
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Errror al intentar obtener los productos')
+    }
+  }
+
   static async create({ userId, data }: { userId: string; data: ProductCreateType }) {
     try {
       const user = await prisma.user.findUnique({ where: { id: userId } })

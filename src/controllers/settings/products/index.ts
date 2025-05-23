@@ -10,6 +10,35 @@ export class ProductsController {
     this.model = model
   }
 
+  getAll = async (req: Request, res: Response) => {
+    const { page, search } = req.query
+    const pageNumber = Number(page) || 1
+    const searchString = search?.toString()
+
+    try {
+      const { objects, totalItems, totalPages } = await this.model.getAll({
+        page: pageNumber,
+        search: searchString,
+      })
+      res.json({
+        objects: objects,
+        page: pageNumber,
+        totalItems: totalItems,
+        totalPages: totalPages,
+        hasNextPage: pageNumber < totalPages,
+        hasPreviousPage: pageNumber > 1,
+        nextPage: pageNumber < totalPages ? pageNumber + 1 : null,
+        previousPage: pageNumber > 1 ? pageNumber - 1 : null,
+      })
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message })
+        return
+      }
+      res.status(500).json({ error: 'Internal server error' })
+    }
+  }
+
   create = async (req: Request, res: Response) => {
     const { user } = req
 
@@ -24,7 +53,7 @@ export class ProductsController {
       }
 
       const newObject = await this.model.create({ userId: user.id, data: result.data })
-      res.status(200).json({ product: newObject, message: 'Producto creado correctamente' })
+      res.status(201).json({ product: newObject, message: 'Producto creado correctamente' })
     } catch (error) {
       if (error instanceof AppError) {
         res.status(error.statusCode).json({ error: error.message })

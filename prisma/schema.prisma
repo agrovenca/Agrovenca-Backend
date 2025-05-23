@@ -100,7 +100,19 @@ model Product {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserProducts")
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, name: "CategoryProducts")
   unity    Unity    @relation(fields: [unityId], references: [id], onDelete: Cascade, name: "UnityProducts")
+  images   Image[]  @relation("ProductImages")
 
   @@index([categoryId, displayOrder])
   @@index([unityId])
+}
+
+model Image {
+  id        String @id @default(uuid())
+  url       String @db.VarChar(800)
+  productId String
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, name: "ProductImages")
+  createdAt DateTime @default(now())
+
+  @@index([productId])
 }

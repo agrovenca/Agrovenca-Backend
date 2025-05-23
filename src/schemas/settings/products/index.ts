@@ -2,10 +2,10 @@ import { z } from 'zod'
 
 export const ProductCreateSchema = z.object({
   name: z.string().min(2).max(255),
-  description: z.string().min(2).max(255),
-  price: z.number().default(0.0),
+  description: z.string().min(2).max(800),
+  price: z.number(),
   secondPrice: z.number().optional().default(0.0),
-  stock: z.number().default(0),
+  stock: z.number().default(1),
   freeShipping: z.boolean(),
   videoId: z.string().optional(),
 
