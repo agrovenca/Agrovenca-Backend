@@ -39,7 +39,7 @@ export class ProductModel {
         prisma.product.count({ where: whereClause }),
         prisma.product.findMany({
           where: whereClause,
-          orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }],
+          orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
           take,
           skip,
         }),
