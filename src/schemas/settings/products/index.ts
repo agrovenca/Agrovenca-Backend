@@ -2,7 +2,10 @@ import { z } from 'zod'
 
 export const ProductCreateSchema = z.object({
   name: z.string().min(2).max(255),
-  description: z.string().min(2).max(800),
+  description: z
+    .string()
+    .min(2, { message: 'Mínimo 2 caractéres' })
+    .max(800, { message: 'Máximo 800 caractéres' }),
   price: z.number(),
   secondPrice: z.number().optional().default(0.0),
   stock: z.number().default(1),
