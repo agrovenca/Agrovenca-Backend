@@ -112,4 +112,35 @@ export class ProductModel {
       throw new ServerError('Error al intentar actualizar el producto')
     }
   }
+
+  static async delete({ id }: { id: string }) {
+    try {
+      const product = await prisma.product.findUnique({
+        where: { id },
+      })
+
+      if (!product) throw new NotFoundError('Producto no encontrado')
+
+      const deleted = await prisma.product.delete({
+        where: { id },
+      })
+      await prisma.product.updateMany({
+        where: {
+          displayOrder: {
+            gt: product.displayOrder,
+          },
+        },
+        data: {
+          displayOrder: {
+            decrement: 1,
+          },
+        },
+      })
+
+      return deleted
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar eliminar el producto')
+    }
+  }
 }

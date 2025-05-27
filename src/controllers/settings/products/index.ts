@@ -85,4 +85,19 @@ export class ProductsController {
       res.status(500).json({ error: 'Internal server error' })
     }
   }
+
+  delete = async (req: Request, res: Response) => {
+    const { id } = req.params
+
+    try {
+      const deletedObject = await this.model.delete({ id })
+      res.send({ product: deletedObject, message: 'Producto eliminado exitosamente' })
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message })
+        return
+      }
+      res.status(500).json({ error: 'Internal server error' })
+    }
+  }
 }
