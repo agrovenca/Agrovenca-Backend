@@ -100,4 +100,38 @@ export class ProductsController {
       res.status(500).json({ error: 'Internal server error' })
     }
   }
+
+  updateOrder = async (req: Request, res: Response) => {
+    try {
+      const { updatedProducts } = req.body
+
+      if (!Array.isArray(updatedProducts)) {
+        res.status(400).json({
+          error: 'El cuerpo de la solicitud debe contener un array llamado "updatedProducts"',
+        })
+        return
+      }
+
+      const hasInvalidItem = updatedProducts.some(
+        (item) => typeof item.id !== 'string' || typeof item.displayOrder !== 'number',
+      )
+
+      if (hasInvalidItem) {
+        res
+          .status(400)
+          .json({ error: 'Cada producto debe tener un "id" (string) y un "displayOrder" (number)' })
+        return
+      }
+
+      const result = await this.model.updateOrder(updatedProducts)
+
+      res.status(200).json({ message: 'Orden actualizado correctamente', result })
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message })
+        return
+      }
+      res.status(500).json({ error: 'Internal server error' })
+    }
+  }
 }

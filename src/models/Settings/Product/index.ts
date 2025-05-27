@@ -143,4 +143,20 @@ export class ProductModel {
       throw new ServerError('Error al intentar eliminar el producto')
     }
   }
+
+  static async updateOrder(updatedProducts: { id: string; displayOrder: number }[]) {
+    try {
+      const updateOperations = updatedProducts.map((product) =>
+        prisma.product.update({
+          where: { id: product.id },
+          data: { displayOrder: product.displayOrder },
+        }),
+      )
+
+      return await prisma.$transaction(updateOperations)
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al actualizar el orden de los productos')
+    }
+  }
 }
