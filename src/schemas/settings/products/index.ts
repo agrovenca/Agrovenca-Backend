@@ -13,7 +13,7 @@ export const ProductCreateSchema = z.object({
   unityId: z.string().uuid(),
 })
 
-export const ProductUpdateSchema = ProductCreateSchema
+export const ProductUpdateSchema = ProductCreateSchema.partial()
 
 export type ProductCreateType = z.infer<typeof ProductCreateSchema>
 export type ProductUpdateType = z.infer<typeof ProductUpdateSchema>

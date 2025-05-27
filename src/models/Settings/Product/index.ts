@@ -1,8 +1,9 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
-import { ProductCreateType } from '@/schemas/settings/products'
+import { ProductCreateType, ProductUpdateType } from '@/schemas/settings/products'
 import slugify from 'slugify'
 import { config } from '@/config'
+import { getDataForUpdate } from '@/utils/getDataForUpdate'
 
 const prisma = new PrismaClient()
 const { ITEMS_PER_PAGE } = config
@@ -87,6 +88,28 @@ export class ProductModel {
       }
       if (error instanceof AppError) throw error
       throw new ServerError('Error al intentar crear el producto')
+    }
+  }
+
+  static async update({ id, data }: { id: string; data: ProductUpdateType }) {
+    const newData = getDataForUpdate(data)
+
+    try {
+      const product = await prisma.product.findUnique({ where: { id } })
+      if (!product) throw new NotFoundError('Producto no encontrado')
+
+      if (newData.name) {
+        newData.slug = await generateUniqueSlug(newData.name as string)
+      }
+
+      const updated = await prisma.product.update({
+        where: { id },
+        data: newData,
+      })
+      return updated
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar actualizar el producto')
     }
   }
 }
