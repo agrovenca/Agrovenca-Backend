@@ -1,5 +1,6 @@
 import { UserModel } from '@/models/User'
 import { validateChangePassword, validatePartialUser } from '@/schemas/user'
+import { UserFilterParams } from '@/types/User'
 import { AppError, UnauthorizedError, ValidationError } from '@/utils/errors'
 import { logoutUser } from '@/utils/logoutUser'
 import { validatePasswords } from '@/utils/validatePasswords'
@@ -16,6 +17,7 @@ export class UserController {
     const page = Math.max(Number(req.query.page) || 1, 1)
     const limit = Math.max(Number(req.query.limit) || 10, 1)
     const search = req.query.search?.toString() || ''
+    const isActive = req.query.isActive as UserFilterParams['isActive']
 
     const offset = (page - 1) * limit
 
@@ -24,6 +26,7 @@ export class UserController {
         offset,
         limit,
         search,
+        isActive,
       })
 
       const totalPages = Math.ceil(totalItems / limit)

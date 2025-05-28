@@ -5,25 +5,29 @@ import { config } from '@/config'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
 import { AppError, NotFoundError, ServerError, ValidationError } from '@/utils/errors'
 import { UserAccountSetting } from '@/schemas/settings/users'
+import { UserFilterParams } from '@/types/User'
 
 const prisma = new PrismaClient()
 const { SALT_ROUNDS, ITEMS_PER_PAGE } = config
 
 export class UserModel {
-  static async getAll(params: { offset: number; limit: number; search?: string }) {
+  static async getAll(params: UserFilterParams) {
     const search = params.search ?? ''
     const take = params.limit
     const skip = params.offset
+    const isActive = params.isActive
 
     try {
-      const whereClause: Prisma.UserWhereInput = search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } },
-            ],
-          }
-        : {}
+      const whereClause: Prisma.UserWhereInput = {}
+
+      if (search) {
+        whereClause.name = { contains: search, mode: 'insensitive' }
+        whereClause.email = { contains: search, mode: 'insensitive' }
+      }
+
+      if (isActive) {
+        whereClause.isActive = isActive === 'active'
+      }
 
       const [totalItems, objects] = await Promise.all([
         prisma.user.count({ where: whereClause }),

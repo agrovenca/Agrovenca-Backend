@@ -3,6 +3,7 @@ import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/err
 import { ProductCreateType, ProductUpdateType } from '@/schemas/settings/products'
 import slugify from 'slugify'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
+import { ProductFilterParams } from '@/types/Product'
 
 const prisma = new PrismaClient()
 
@@ -21,16 +22,10 @@ async function generateUniqueSlug(text: string): Promise<string> {
 }
 
 export class ProductModel {
-  static async getAll(params: {
-    offset: number
-    limit: number
-    search?: string
-    categoryId?: string
-  }) {
+  static async getAll(params: ProductFilterParams) {
     const search = params.search ?? ''
     const categoryId = params.categoryId ?? ''
-    const take = params.limit
-    const skip = params.offset
+    const { limit: take, offset: skip } = params
 
     try {
       const whereClause: Prisma.ProductWhereInput = {}
