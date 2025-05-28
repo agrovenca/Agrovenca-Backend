@@ -1,6 +1,6 @@
+import { handleErrors } from '@/controllers/handleErrors'
 import { UserModel } from '@/models/User'
 import { validateUserAccountSchema } from '@/schemas/settings/users'
-import { AppError } from '@/utils/errors'
 import { Request, Response } from 'express'
 
 export class SettingsUserController {
@@ -25,11 +25,7 @@ export class SettingsUserController {
 
       res.status(200).json({ user: updated, message: 'Usuario actualizado correctamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 }

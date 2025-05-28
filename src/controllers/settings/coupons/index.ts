@@ -1,6 +1,7 @@
+import { handleErrors } from '@/controllers/handleErrors'
 import { CouponModel } from '@/models/Settings/Coupon'
 import { validateCoupon, validatePartialCoupon } from '@/schemas/settings/coupons'
-import { AppError, ValidationError } from '@/utils/errors'
+import { ValidationError } from '@/utils/errors'
 import { Request, Response } from 'express'
 
 export class CouponController {
@@ -15,11 +16,7 @@ export class CouponController {
       const objects = await this.model.getAll()
       res.json(objects)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -44,11 +41,7 @@ export class CouponController {
         message: 'Cupón creado correctamente',
       })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -67,11 +60,7 @@ export class CouponController {
 
       res.status(200).json({ coupon: updatedObject, message: 'Cupón actualizado correctamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -82,11 +71,7 @@ export class CouponController {
       const deletedObject = await this.model.delete({ id })
       res.send({ coupon: deletedObject, message: 'Cupón eliminado exitosamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 }

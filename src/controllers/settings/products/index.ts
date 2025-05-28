@@ -1,6 +1,7 @@
+import { handleErrors } from '@/controllers/handleErrors'
 import { ProductModel } from '@/models/Settings/Product'
 import { validateProductCreate, validateProductUpdate } from '@/schemas/settings/products'
-import { AppError, NotFoundError } from '@/utils/errors'
+import { NotFoundError } from '@/utils/errors'
 import { Request, Response } from 'express'
 
 export class ProductsController {
@@ -39,11 +40,7 @@ export class ProductsController {
         previousPage: page > 1 ? page - 1 : null,
       })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -63,11 +60,7 @@ export class ProductsController {
       const newObject = await this.model.create({ userId: user.id, data: result.data })
       res.status(201).json({ product: newObject, message: 'Producto creado correctamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -86,11 +79,7 @@ export class ProductsController {
 
       res.status(200).json({ product: updatedObject, message: 'Producto actualizado exitosamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -101,11 +90,7 @@ export class ProductsController {
       const deletedObject = await this.model.delete({ id })
       res.send({ product: deletedObject, message: 'Producto eliminado exitosamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -135,11 +120,7 @@ export class ProductsController {
 
       res.status(200).json({ message: 'Orden actualizado correctamente', result })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 }

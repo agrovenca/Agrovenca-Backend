@@ -103,7 +103,6 @@ export class UserModel {
       return userChanged
     } catch (error) {
       if (error instanceof AppError) throw error
-
       throw new ServerError('Error al intenatar cambiar la contraseña')
     }
   }
@@ -133,7 +132,6 @@ export class UserModel {
       return updated
     } catch (error) {
       if (error instanceof AppError) throw error
-
       throw new ServerError('Error al intentar cambiar la cuenta')
     }
   }

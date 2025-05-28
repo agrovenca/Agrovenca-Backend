@@ -1,10 +1,11 @@
 import { UserModel } from '@/models/User'
 import { validateChangePassword, validatePartialUser } from '@/schemas/user'
 import { UserFilterParams } from '@/types/User'
-import { AppError, UnauthorizedError, ValidationError } from '@/utils/errors'
+import { UnauthorizedError, ValidationError } from '@/utils/errors'
 import { logoutUser } from '@/utils/logoutUser'
 import { validatePasswords } from '@/utils/validatePasswords'
 import { Request, Response } from 'express'
+import { handleErrors } from '../handleErrors'
 
 export class UserController {
   private model: typeof UserModel
@@ -42,11 +43,7 @@ export class UserController {
         previousPage: page > 1 ? page - 1 : null,
       })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -57,11 +54,7 @@ export class UserController {
       const user = await this.model.getById({ id })
       res.send(user)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -72,11 +65,7 @@ export class UserController {
       const user = await this.model.getById({ id: currentUser?.id })
       res.send(user)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -98,11 +87,7 @@ export class UserController {
       const updatedUser = await this.model.update({ id, data: result.data })
       res.status(200).json(updatedUser)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -127,11 +112,7 @@ export class UserController {
 
       logoutUser(req, res, 'Contraseña cambiada correctamente')
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 }

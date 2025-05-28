@@ -1,6 +1,7 @@
+import { handleErrors } from '@/controllers/handleErrors'
 import { CategoryModel } from '@/models/Settings/Category'
 import { validateCategory } from '@/schemas/settings/categories'
-import { AppError, NotFoundError } from '@/utils/errors'
+import { NotFoundError } from '@/utils/errors'
 import { Request, Response } from 'express'
 
 export class CategoriesController {
@@ -15,11 +16,7 @@ export class CategoriesController {
       const objects = await this.model.getAll()
       res.json(objects)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -30,11 +27,7 @@ export class CategoriesController {
       const object = await this.model.getById({ id })
       res.send(object)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -57,11 +50,7 @@ export class CategoriesController {
         message: 'Categoría creada correctamente',
       })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -83,11 +72,7 @@ export class CategoriesController {
         .status(200)
         .json({ category: updatedObject, message: 'Categoría actualizada exitosamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -98,11 +83,7 @@ export class CategoriesController {
       const deletedObject = await this.model.delete({ id })
       res.send({ category: deletedObject, message: 'Category deleted successfully.' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 }

@@ -8,8 +8,9 @@ import { getUserRole } from '@/utils/getUserRole'
 import { transporter } from '@/utils/mailer'
 import ejs from 'ejs'
 import path from 'path'
-import { AppError, NotFoundError, ValidationError } from '@/utils/errors'
+import { NotFoundError, ValidationError } from '@/utils/errors'
 import { validatePasswords } from '@/utils/validatePasswords'
+import { handleErrors } from '../handleErrors'
 
 const { SECRET_JWT_KEY, SECRET_REFRESH_KEY, COOKIE_OPTIONS, EMAIL_FROM, FRONTEND_URL } = config
 
@@ -57,12 +58,7 @@ export class AuthController {
         .status(200)
         .send({ user: user, message: 'Logged in successfully' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
-      return
+      handleErrors({ error, res })
     }
   }
 
@@ -82,14 +78,8 @@ export class AuthController {
       const newUser = await this.model.create({ data: result.data })
       res.status(201).send({ user: newUser, message: 'Account created successfully. Please login' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
-      return
+      handleErrors({ error, res })
     }
-    return
   }
 
   resetPasswordSend = async (req: Request, res: Response) => {
@@ -125,13 +115,7 @@ export class AuthController {
 
       res.status(200).json({ message: 'Correo electrónico enviado exitosamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-
-      res.status(500).json({ error: 'Internal server error' })
-      return
+      handleErrors({ error, res })
     }
   }
 
@@ -145,13 +129,7 @@ export class AuthController {
 
       res.status(200).json({ message: 'Código de seguridad válido', code: object.code })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message, statusText: error.statusText })
-        return
-      }
-
-      res.status(500).json({ error: 'Internal server error' })
-      return
+      handleErrors({ error, res })
     }
   }
 
@@ -174,13 +152,7 @@ export class AuthController {
       await this.model.resetPasswordConfirm({ code, newPassword })
       res.status(200).json({ message: 'Contraseña restablecida exitosamente.' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message, statusText: error.statusText })
-        return
-      }
-
-      res.status(500).json({ error: 'Internal server error' })
-      return
+      handleErrors({ error, res })
     }
   }
 

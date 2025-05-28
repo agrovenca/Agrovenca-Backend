@@ -1,6 +1,6 @@
+import { handleErrors } from '@/controllers/handleErrors'
 import { UnityModel } from '@/models/Settings/Unity'
 import { validateUnity } from '@/schemas/settings/unities'
-import { AppError } from '@/utils/errors'
 import { Request, Response } from 'express'
 
 export class UnityController {
@@ -15,11 +15,7 @@ export class UnityController {
       const objects = await this.model.getAll()
       res.json(objects)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -30,11 +26,7 @@ export class UnityController {
       const object = await this.model.getById({ id })
       res.send(object)
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -53,11 +45,7 @@ export class UnityController {
         message: 'Unidad creada correctamente',
       })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -76,11 +64,7 @@ export class UnityController {
 
       res.status(200).json({ unity: updatedObject, message: 'Unidad actualizada correctamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 
@@ -91,11 +75,7 @@ export class UnityController {
       const deletedObject = await this.model.delete({ id })
       res.send({ unity: deletedObject, message: 'Unidad eliminada exitosamente' })
     } catch (error) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ error: error.message })
-        return
-      }
-      res.status(500).json({ error: 'Internal server error' })
+      handleErrors({ error, res })
     }
   }
 }
