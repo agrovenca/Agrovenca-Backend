@@ -13,24 +13,30 @@ export class UserController {
   }
 
   getAll = async (req: Request, res: Response) => {
-    const { page, search } = req.query
-    const pageNumber = Number(page) || 1
-    const searchString = search?.toString()
+    const page = Math.max(Number(req.query.page) || 1, 1)
+    const limit = Math.max(Number(req.query.limit) || 10, 1)
+    const search = req.query.search?.toString() || ''
+
+    const offset = (page - 1) * limit
 
     try {
-      const result = await this.model.getAll({
-        page: pageNumber,
-        search: searchString,
+      const { objects, totalItems } = await this.model.getAll({
+        offset,
+        limit,
+        search,
       })
+
+      const totalPages = Math.ceil(totalItems / limit)
+
       res.json({
-        objects: result.objects,
-        page: pageNumber,
-        totalItems: result.totalItems,
-        totalPages: result.totalPages,
-        hasNextPage: pageNumber < result.totalPages,
-        hasPreviousPage: pageNumber > 1,
-        nextPage: pageNumber < result.totalPages ? pageNumber + 1 : null,
-        previousPage: pageNumber > 1 ? pageNumber - 1 : null,
+        objects: objects,
+        page: page,
+        totalItems: totalItems,
+        totalPages: totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+        nextPage: page < totalPages ? page + 1 : null,
+        previousPage: page > 1 ? page - 1 : null,
       })
     } catch (error) {
       if (error instanceof AppError) {

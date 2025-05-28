@@ -10,11 +10,10 @@ const prisma = new PrismaClient()
 const { SALT_ROUNDS, ITEMS_PER_PAGE } = config
 
 export class UserModel {
-  static async getAll(params?: { page?: number; search?: string }) {
-    const page = params?.page ?? 1
-    const search = params?.search ?? ''
-    const take = ITEMS_PER_PAGE
-    const skip = (page - 1) * ITEMS_PER_PAGE
+  static async getAll(params: { offset: number; limit: number; search?: string }) {
+    const search = params.search ?? ''
+    const take = params.limit
+    const skip = params.offset
 
     try {
       const whereClause: Prisma.UserWhereInput = search

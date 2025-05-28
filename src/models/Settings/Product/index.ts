@@ -2,11 +2,9 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
 import { ProductCreateType, ProductUpdateType } from '@/schemas/settings/products'
 import slugify from 'slugify'
-import { config } from '@/config'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
 
 const prisma = new PrismaClient()
-const { ITEMS_PER_PAGE } = config
 
 async function generateUniqueSlug(text: string): Promise<string> {
   const baseSlug = slugify(text, { replacement: '-', lower: true, strict: true, trim: true })
@@ -23,18 +21,27 @@ async function generateUniqueSlug(text: string): Promise<string> {
 }
 
 export class ProductModel {
-  static async getAll(params?: { page?: number; search?: string }) {
-    const page = params?.page ?? 1
-    const search = params?.search ?? ''
-    const take = ITEMS_PER_PAGE
-    const skip = (page - 1) * ITEMS_PER_PAGE
+  static async getAll(params: {
+    offset: number
+    limit: number
+    search?: string
+    categoryId?: string
+  }) {
+    const search = params.search ?? ''
+    const categoryId = params.categoryId ?? ''
+    const take = params.limit
+    const skip = params.offset
 
     try {
-      const whereClause: Prisma.ProductWhereInput = search
-        ? {
-            OR: [{ name: { contains: search, mode: 'insensitive' } }],
-          }
-        : {}
+      const whereClause: Prisma.ProductWhereInput = {}
+
+      if (search) {
+        whereClause.name = { contains: search, mode: 'insensitive' }
+      }
+
+      if (categoryId) {
+        whereClause.categoryId = categoryId
+      }
 
       const [totalItems, objects] = await Promise.all([
         prisma.product.count({ where: whereClause }),
@@ -46,9 +53,7 @@ export class ProductModel {
         }),
       ])
 
-      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
-
-      return { objects, totalItems, totalPages }
+      return { objects, totalItems }
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Errror al intentar obtener los productos')

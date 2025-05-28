@@ -11,24 +11,32 @@ export class ProductsController {
   }
 
   getAll = async (req: Request, res: Response) => {
-    const { page, search } = req.query
-    const pageNumber = Number(page) || 1
-    const searchString = search?.toString()
+    const page = Math.max(Number(req.query.page) || 1, 1)
+    const limit = Math.max(Number(req.query.limit) || 10, 1)
+    const search = req.query.search?.toString() || ''
+    const categoryId = req.query.categoryId?.toString() || ''
+
+    const offset = (page - 1) * limit
 
     try {
-      const { objects, totalItems, totalPages } = await this.model.getAll({
-        page: pageNumber,
-        search: searchString,
+      const { objects, totalItems } = await this.model.getAll({
+        offset,
+        limit,
+        search,
+        categoryId,
       })
+
+      const totalPages = Math.ceil(totalItems / limit)
+
       res.json({
         objects: objects,
-        page: pageNumber,
+        page: page,
         totalItems: totalItems,
         totalPages: totalPages,
-        hasNextPage: pageNumber < totalPages,
-        hasPreviousPage: pageNumber > 1,
-        nextPage: pageNumber < totalPages ? pageNumber + 1 : null,
-        previousPage: pageNumber > 1 ? pageNumber - 1 : null,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+        nextPage: page < totalPages ? page + 1 : null,
+        previousPage: page > 1 ? page - 1 : null,
       })
     } catch (error) {
       if (error instanceof AppError) {
