@@ -25,7 +25,7 @@ export const createProductImagesRouter = () => {
     },
     controller.create,
   )
-  // router.patch('/order', controller.updateOrder)
+  router.patch('/order', controller.updateOrder)
   // router.patch('/:id', controller.update)
   // router.delete('/:id', controller.delete)
 

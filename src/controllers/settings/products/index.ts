@@ -2,6 +2,7 @@ import { handleErrors } from '@/controllers/handleErrors'
 import { ProductModel } from '@/models/Settings/Product'
 import { validateProductCreate, validateProductUpdate } from '@/schemas/settings/products'
 import { NotFoundError } from '@/utils/errors'
+import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
 import { Request, Response } from 'express'
 
 export class ProductsController {
@@ -28,9 +29,20 @@ export class ProductsController {
       })
 
       const totalPages = Math.ceil(totalItems / limit)
+      const productsWithSignedImages = await Promise.all(
+        objects.map(async (product) => ({
+          ...product,
+          images: await Promise.all(
+            product.images.map(async (image) => ({
+              ...image,
+              s3Key: await getSignedImageUrl(image.s3Key),
+            })),
+          ),
+        })),
+      )
 
       res.json({
-        objects: objects,
+        objects: productsWithSignedImages,
         page: page,
         totalItems: totalItems,
         totalPages: totalPages,

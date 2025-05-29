@@ -31,21 +31,25 @@ export class ProductImagesModel {
   static async create({ productId, data }: { productId: string; data: ImageCreateType }) {
     try {
       const product = await prisma.product.findUnique({ where: { id: productId } })
+      const { files }: { files?: MulterS3File[] } = data
       if (!product) throw new NotFoundError('Producto no encontrado')
+      if (!files) throw new NotFoundError('Debes subir al menos una imagen.')
 
-      const { files } = data
       const imagesCount = await prisma.image.count({
         where: { productId: product.id },
       })
-      if (imagesCount >= PRODUCT_IMAGE_LIMIT)
+      if (imagesCount + files.length > PRODUCT_IMAGE_LIMIT) {
         throw new ValidationError(
-          `Alcanzaste el límite de ${PRODUCT_IMAGE_LIMIT} imágenes por producto`,
+          imagesCount > PRODUCT_IMAGE_LIMIT
+            ? `Alcanzaste el límite de ${PRODUCT_IMAGE_LIMIT} imágenes por producto`
+            : `Solo puedes subir ${PRODUCT_IMAGE_LIMIT - imagesCount} imágenes más antes de alcanzar el límite de ${PRODUCT_IMAGE_LIMIT}`,
         )
+      }
 
       await prisma.image.createMany({
-        data: files.map((file: MulterS3File, idx: number) => {
+        data: files.map((file, idx: number) => {
           return {
-            url: file.key,
+            s3Key: file.key,
             displayOrder: imagesCount + idx + 1,
             productId: product.id,
           }
@@ -56,7 +60,7 @@ export class ProductImagesModel {
       const imagesWithSignedUrls = await Promise.all(
         images.map(async (img) => ({
           ...img,
-          url: await getSignedImageUrl(img.url),
+          s3Key: await getSignedImageUrl(img.s3Key),
         })),
       )
       return imagesWithSignedUrls
@@ -71,20 +75,21 @@ export class ProductImagesModel {
     }
   }
 
-  // * TODO
-  static async updateOrder(updatedImages: { id: string; displayOrder: number }[]) {
+  static async updateOrder(
+    updatedImages: { id: string; productId: string; displayOrder: number }[],
+  ) {
     try {
-      const updateOperations = updatedImages.map((product) =>
-        prisma.product.update({
-          where: { id: product.id },
-          data: { displayOrder: product.displayOrder },
+      const updateOperations = updatedImages.map((image) =>
+        prisma.image.update({
+          where: { id: image.id, productId: image.productId },
+          data: { displayOrder: image.displayOrder },
         }),
       )
 
       return await prisma.$transaction(updateOperations)
     } catch (error) {
       if (error instanceof AppError) throw error
-      throw new ServerError('Error al actualizar el orden de los productos')
+      throw new ServerError('Error al actualizar el orden de las imágenes')
     }
   }
 }

@@ -50,4 +50,39 @@ export class ProductImagesController {
       handleErrors({ error, res })
     }
   }
+
+  updateOrder = async (req: Request, res: Response) => {
+    try {
+      const { updatedImages } = req.body
+
+      if (!Array.isArray(updatedImages)) {
+        res.status(400).json({
+          error: 'El cuerpo de la solicitud debe contener un array llamado "updatedImages"',
+        })
+        return
+      }
+
+      const hasInvalidItem = updatedImages.some(
+        (item) =>
+          typeof item.id !== 'string' ||
+          typeof item.productId !== 'string' ||
+          typeof item.displayOrder !== 'number',
+      )
+
+      if (hasInvalidItem) {
+        res.status(400).json({
+          error:
+            'Cada imagen debe tener un "id" (string), "productId" (string) y un "displayOrder" (number)',
+        })
+        return
+      }
+
+      const result = await this.model.updateOrder(updatedImages)
+
+      res.status(200).json({ message: 'Orden actualizado correctamente', result })
+      return
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
 }
