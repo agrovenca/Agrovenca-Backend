@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
 import { ImageCreateType } from '@/schemas/settings/images'
+import { MulterS3File } from '@/types/shared'
 
 const prisma = new PrismaClient()
 
@@ -30,17 +31,17 @@ export class ProductImagesModel {
 
       // 'https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary.svg'
 
-      const newObjects = await prisma.image.createMany({
-        data: files.map((file: Express.Multer.File) => {
+      await prisma.image.createMany({
+        data: files.map((file: MulterS3File, idx: number) => {
           return {
-            url: file.originalname,
-            displayOrder: imagesCount + 1,
+            url: file.location,
+            displayOrder: imagesCount + idx + 1,
             productId: product.id,
           }
         }),
       })
 
-      return newObjects
+      return await prisma.image.findMany({ where: { productId } })
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {

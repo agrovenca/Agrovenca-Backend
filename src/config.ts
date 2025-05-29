@@ -18,6 +18,11 @@ interface Config {
   EMAIL_PASSWORD: string
   EMAIL_SECURE: string
   FRONTEND_URL: string
+  AWS_ACCESS_KEY_ID: string
+  AWS_SECRET_ACCESS_KEY: string
+  AWS_STORAGE_BUCKET_NAME: string
+  AWS_S3_REGION_NAME: string
+  AWS_S3_ENDPOINT_URL: string
 }
 
 export const config: Config = {
@@ -36,4 +41,9 @@ export const config: Config = {
   EMAIL_PASSWORD: process.env.EMAIL_PASSWORD as string,
   EMAIL_SECURE: process.env.EMAIL_SECURE as string,
   FRONTEND_URL: process.env.FRONTEND_URL as string,
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID as string,
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY as string,
+  AWS_STORAGE_BUCKET_NAME: process.env.AWS_STORAGE_BUCKET_NAME as string,
+  AWS_S3_REGION_NAME: process.env.AWS_S3_REGION_NAME as string,
+  AWS_S3_ENDPOINT_URL: process.env.AWS_S3_ENDPOINT_URL as string,
 }

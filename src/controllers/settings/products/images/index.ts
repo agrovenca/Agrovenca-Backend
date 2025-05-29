@@ -1,6 +1,7 @@
 import { handleErrors } from '@/controllers/handleErrors'
 import { ProductImagesModel } from '@/models/Settings/Product/Images'
 import { validateImageCreate } from '@/schemas/settings/images'
+import { MulterS3File } from '@/types/shared'
 import { NotFoundError } from '@/utils/errors'
 import { Request, Response } from 'express'
 
@@ -24,7 +25,7 @@ export class ProductImagesController {
 
   create = async (req: Request, res: Response) => {
     const { productId } = req.params
-    const files = req.files as Express.Multer.File[]
+    const files = req.files as MulterS3File[]
 
     try {
       if (!productId) throw new NotFoundError('Imagen no encontrada')
@@ -42,7 +43,9 @@ export class ProductImagesController {
       }
 
       const newObjects = await this.model.create({ productId, data: result.data })
-      res.status(201).json({ images: newObjects, message: 'Imagen registrada correctamente' })
+      res
+        .status(201)
+        .json({ images: newObjects, productId, message: 'Imagen registrada correctamente' })
     } catch (error) {
       handleErrors({ error, res })
     }

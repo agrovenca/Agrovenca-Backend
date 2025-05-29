@@ -1,9 +1,7 @@
 import { ProductImagesController } from '@/controllers/settings/products/images'
 import { ProductImagesModel } from '@/models/Settings/Product/Images'
+import { getMulterS3Upload } from '@/utils/s3Uploader'
 import { Router } from 'express'
-import multer from 'multer'
-
-const upload = multer({ dest: 'uploads/' })
 
 export const createProductImagesRouter = () => {
   const router = Router()
@@ -11,7 +9,22 @@ export const createProductImagesRouter = () => {
 
   router.get('/:productId', controller.getImagesByProduct)
   // router.get('/:id', controller.getObject)
-  router.post('/:productId', upload.array('files'), controller.create)
+  router.post(
+    '/:productId',
+    async (req, res, next) => {
+      const productId = req.params.productId
+      const upload = getMulterS3Upload(productId).array('files')
+
+      upload(req, res, (err) => {
+        if (err) {
+          res.status(500).json({ error: err.message })
+          return
+        }
+        next()
+      })
+    },
+    controller.create,
+  )
   // router.patch('/order', controller.updateOrder)
   // router.patch('/:id', controller.update)
   // router.delete('/:id', controller.delete)
