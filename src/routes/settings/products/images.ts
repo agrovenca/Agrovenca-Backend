@@ -1,6 +1,6 @@
 import { ProductImagesController } from '@/controllers/settings/products/images'
 import { ProductImagesModel } from '@/models/Settings/Product/Images'
-import { getMulterS3Upload } from '@/utils/s3Uploader'
+import { getMulterS3Upload } from '@/utils/s3/s3Uploader'
 import { Router } from 'express'
 
 export const createProductImagesRouter = () => {

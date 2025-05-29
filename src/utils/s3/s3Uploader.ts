@@ -14,7 +14,7 @@ const {
   AWS_S3_ENDPOINT_URL,
 } = config
 
-const s3 = new S3Client({
+export const s3 = new S3Client({
   region: AWS_S3_REGION_NAME,
   endpoint: `https://${AWS_S3_REGION_NAME}.${AWS_S3_ENDPOINT_URL}`,
   credentials: {
@@ -28,7 +28,7 @@ export const getMulterS3Upload = (productId: string) => {
     storage: multerS3({
       s3: s3,
       bucket: AWS_STORAGE_BUCKET_NAME,
-      acl: 'public-read',
+      acl: 'private',
       contentType: multerS3.AUTO_CONTENT_TYPE,
       key: async (_req, file, cb) => {
         try {

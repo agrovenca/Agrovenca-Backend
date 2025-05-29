@@ -1,9 +1,17 @@
 import { Prisma, PrismaClient } from '@prisma/client'
-import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
+import {
+  AppError,
+  ConflictError,
+  NotFoundError,
+  ServerError,
+  ValidationError,
+} from '@/utils/errors'
 import { ImageCreateType } from '@/schemas/settings/images'
 import { MulterS3File } from '@/types/shared'
+import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
 
 const prisma = new PrismaClient()
+const PRODUCT_IMAGE_LIMIT = 5
 
 export class ProductImagesModel {
   static async getImagesByProduct({ productId }: { productId: string }) {
@@ -23,25 +31,35 @@ export class ProductImagesModel {
   static async create({ productId, data }: { productId: string; data: ImageCreateType }) {
     try {
       const product = await prisma.product.findUnique({ where: { id: productId } })
-      const { files } = data
       if (!product) throw new NotFoundError('Producto no encontrado')
+
+      const { files } = data
       const imagesCount = await prisma.image.count({
         where: { productId: product.id },
       })
-
-      // 'https://ralfvanveen.com/wp-content/uploads/2021/06/Placeholder-_-Glossary.svg'
+      if (imagesCount >= PRODUCT_IMAGE_LIMIT)
+        throw new ValidationError(
+          `Alcanzaste el límite de ${PRODUCT_IMAGE_LIMIT} imágenes por producto`,
+        )
 
       await prisma.image.createMany({
         data: files.map((file: MulterS3File, idx: number) => {
           return {
-            url: file.location,
+            url: file.key,
             displayOrder: imagesCount + idx + 1,
             productId: product.id,
           }
         }),
       })
 
-      return await prisma.image.findMany({ where: { productId } })
+      const images = await prisma.image.findMany({ where: { productId } })
+      const imagesWithSignedUrls = await Promise.all(
+        images.map(async (img) => ({
+          ...img,
+          url: await getSignedImageUrl(img.url),
+        })),
+      )
+      return imagesWithSignedUrls
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
