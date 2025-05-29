@@ -107,12 +107,12 @@ model Product {
 }
 
 model Image {
-  id        String @id @default(uuid())
-  url       String @db.VarChar(800)
-  productId String
-
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, name: "ProductImages")
-  createdAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  url          String   @db.VarChar(800)
+  productId    String
+  displayOrder Int      @default(0)
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade, name: "ProductImages")
+  createdAt    DateTime @default(now())
 
   @@index([productId])
 }

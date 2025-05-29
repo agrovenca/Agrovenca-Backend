@@ -43,6 +43,7 @@ export class ProductModel {
         prisma.product.findMany({
           where: whereClause,
           orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
+          include: { images: true },
           take,
           skip,
         }),
