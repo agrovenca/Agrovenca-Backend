@@ -43,9 +43,14 @@ export class ProductImagesController {
       }
 
       const newObjects = await this.model.create({ productId, data: result.data })
-      res
-        .status(201)
-        .json({ images: newObjects, productId, message: 'Imagen registrada correctamente' })
+      res.status(201).json({
+        images: newObjects,
+        productId,
+        message:
+          newObjects.length > 1
+            ? 'Imágenes registradas correctamente'
+            : 'Imagen registrada correctamente',
+      })
     } catch (error) {
       handleErrors({ error, res })
     }
@@ -81,6 +86,17 @@ export class ProductImagesController {
 
       res.status(200).json({ message: 'Orden actualizado correctamente', result })
       return
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
+  delete = async (req: Request, res: Response) => {
+    const { imageId, productId } = req.params
+
+    try {
+      const reorderedImages = await this.model.delete({ imageId, productId })
+      res.send({ images: reorderedImages, message: 'Imagen eliminada correctamente' })
     } catch (error) {
       handleErrors({ error, res })
     }

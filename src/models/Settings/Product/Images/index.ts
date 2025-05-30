@@ -9,9 +9,13 @@ import {
 import { ImageCreateType } from '@/schemas/settings/images'
 import { MulterS3File } from '@/types/shared'
 import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
+import { DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { config } from '@/config'
+import { s3 } from '@/utils/s3/s3Uploader'
 
 const prisma = new PrismaClient()
 const PRODUCT_IMAGE_LIMIT = 5
+const { AWS_STORAGE_BUCKET_NAME } = config
 
 export class ProductImagesModel {
   static async getImagesByProduct({ productId }: { productId: string }) {
@@ -67,7 +71,9 @@ export class ProductImagesModel {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ConflictError('La imagen ya existe')
+          throw new ConflictError(
+            'Una o varias imágenes ya existen. Elimina las duplicadas e intenta de nuevo.',
+          )
         }
       }
       if (error instanceof AppError) throw error
@@ -90,6 +96,66 @@ export class ProductImagesModel {
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Error al actualizar el orden de las imágenes')
+    }
+  }
+
+  static async delete({ imageId, productId }: { imageId: string; productId: string }) {
+    try {
+      // 1. Obtener solo la información necesaria: displayOrder
+      const image = await prisma.image.findUnique({
+        where: { id: imageId },
+        select: { id: true, productId: true, s3Key: true, displayOrder: true },
+      })
+
+      if (!image || image.productId !== productId) {
+        throw new NotFoundError('Imagen no encontrada')
+      }
+
+      // 2. Eliminar en paralelo el objeto de S3 y la imagen de la base de datos
+      const deleteS3Promise = s3.send(
+        new DeleteObjectCommand({
+          Bucket: AWS_STORAGE_BUCKET_NAME,
+          Key: image.s3Key,
+        }),
+      )
+
+      const deleteImagePromise = prisma.image.delete({
+        where: { id: imageId },
+      })
+
+      await Promise.all([deleteS3Promise, deleteImagePromise])
+
+      // 3. Actualizar el orden y obtener las imágenes en una sola transacción
+      const updatedImages = await prisma
+        .$transaction([
+          prisma.image.updateMany({
+            where: {
+              productId: productId,
+              displayOrder: { gt: image.displayOrder },
+            },
+            data: {
+              displayOrder: { decrement: 1 },
+            },
+          }),
+          prisma.image.findMany({
+            where: { productId },
+            orderBy: { displayOrder: 'asc' },
+          }),
+        ])
+        .then(async ([_, images]) => {
+          // 4. Firmar URLs
+          const signedImages = await Promise.all(
+            images.map(async (img) => ({
+              ...img,
+              s3Key: await getSignedImageUrl(img.s3Key),
+            })),
+          )
+          return signedImages
+        })
+      return updatedImages
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar eliminar la imagen.')
     }
   }
 }
