@@ -1,7 +1,7 @@
 export interface BaseFilterParams {
-  offset: number
+  offset?: number
   search?: string
-  limit: number
+  limit?: number
 }
 
 interface MulterS3File extends Express.Multer.File {

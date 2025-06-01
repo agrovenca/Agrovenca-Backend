@@ -8,6 +8,7 @@ export const createProductsRouter = () => {
   const productsController = new ProductsController({ model: ProductModel })
 
   productsRouter.get('/', productsController.getAll)
+  productsRouter.get('/export/:format', productsController.export)
   //   productsRouter.get('/:id', productsController.getObject)
   productsRouter.post('/', productsController.create)
   productsRouter.patch('/order', productsController.updateOrder)

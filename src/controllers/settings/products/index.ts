@@ -4,6 +4,9 @@ import { validateProductCreate, validateProductUpdate } from '@/schemas/settings
 import { NotFoundError } from '@/utils/errors'
 import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
 import { Request, Response } from 'express'
+import { exportDataToExcel, ExportDataToExcelType } from '@/utils/export/excel'
+// import { Decimal } from '@prisma/client/runtime/library'
+import excelJs from 'exceljs'
 
 export class ProductsController {
   private model: typeof ProductModel
@@ -70,7 +73,18 @@ export class ProductsController {
       }
 
       const newObject = await this.model.create({ userId: user.id, data: result.data })
-      res.status(201).json({ product: newObject, message: 'Producto creado correctamente' })
+      const productWithSignedImages = {
+        ...newObject,
+        images: await Promise.all(
+          newObject.images.map(async (image) => ({
+            ...image,
+            s3Key: await getSignedImageUrl(image.s3Key),
+          })),
+        ),
+      }
+      res
+        .status(201)
+        .json({ product: productWithSignedImages, message: 'Producto creado correctamente' })
     } catch (error) {
       handleErrors({ error, res })
     }
@@ -88,8 +102,19 @@ export class ProductsController {
       }
 
       const updatedObject = await this.model.update({ id, data: result.data })
+      const productWithSignedImages = {
+        ...updatedObject,
+        images: await Promise.all(
+          updatedObject.images.map(async (image) => ({
+            ...image,
+            s3Key: await getSignedImageUrl(image.s3Key),
+          })),
+        ),
+      }
 
-      res.status(200).json({ product: updatedObject, message: 'Producto actualizado exitosamente' })
+      res
+        .status(200)
+        .json({ product: productWithSignedImages, message: 'Producto actualizado exitosamente' })
     } catch (error) {
       handleErrors({ error, res })
     }
@@ -131,6 +156,70 @@ export class ProductsController {
       const result = await this.model.updateOrder(updatedProducts)
 
       res.status(200).json({ message: 'Orden actualizado correctamente', result })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
+  export = async (req: Request, res: Response) => {
+    try {
+      const { format } = req.params
+      if (!format || format.length <= 1) {
+        res.status(400).json({ message: 'Indique un formato de exportación válido.' })
+        return
+      }
+
+      const { totalItems: _, objects } = await this.model.getAll({})
+      const filename = `productos_${new Date().toISOString().split('T')[0]}`
+
+      if (format.trim() === 'xlsx') {
+        const workBookConfig: ExportDataToExcelType = {
+          res,
+          filename,
+          sheetName: 'Products',
+          dataToExport: objects,
+          columns: [
+            { header: 'Slug', key: 'slug', width: 50 },
+            { header: 'Nombre', key: 'name', width: 50 },
+            { header: 'Descripción', key: 'description', width: 50 },
+            { header: 'Precio', key: 'price', width: 10, style: { numFmt: '0.00' } },
+            { header: 'Segundo precio', key: 'secondPrice', width: 10, style: { numFmt: '0.00' } },
+            { header: 'Stock', key: 'stock', width: 10, style: { numFmt: '0' } },
+            { header: 'Envío gratis', key: 'freeShipping', width: 25 },
+            { header: 'ID del video', key: 'videoId', width: 25 },
+            { header: 'Fecha de creación', key: 'createdAt', width: 25 },
+            { header: 'Fecha de actualización', key: 'updatedAt', width: 25 },
+            {
+              header: 'Orden en pantalla',
+              key: 'displayOrder',
+              width: 10,
+              style: { numFmt: '0' },
+            },
+            { header: 'Categoría', key: 'categoryId', width: 50 },
+            { header: 'Unidad', key: 'unityId', width: 50 },
+            { header: 'Creado por', key: 'userId', width: 50 },
+          ],
+          validations: [
+            {
+              key: 'price',
+              validate: (cell: excelJs.Cell, _rowNumber: number) =>
+                (cell.value = Number(cell.value)),
+            },
+            {
+              key: 'secondPrice',
+              validate: (cell: excelJs.Cell, _rowNumber: number) =>
+                (cell.value = Number(cell.value)),
+            },
+          ],
+        }
+
+        await exportDataToExcel(workBookConfig)
+        res.end()
+        return
+      }
+
+      res.status(400).json({ message: 'Formato de exportación no disponible' })
+      return
     } catch (error) {
       handleErrors({ error, res })
     }

@@ -78,6 +78,7 @@ export class ProductModel {
           category: { connect: { id: data.categoryId } },
           unity: { connect: { id: data.unityId } },
         },
+        include: { images: true },
       })
 
       return newObject
@@ -106,6 +107,7 @@ export class ProductModel {
       const updated = await prisma.product.update({
         where: { id },
         data: newData,
+        include: { images: true },
       })
       return updated
     } catch (error) {
