@@ -1,6 +1,6 @@
 import { config } from '@/config'
 import { Prisma, PrismaClient, User } from '@prisma/client'
-import { User as UserType } from '@/schemas/user'
+import { User as UserType } from '@/schemas/users'
 import bcrypt from 'bcryptjs'
 import {
   AppError,

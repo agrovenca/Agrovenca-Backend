@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser'
 import { createUserRouter } from './routes/users'
 import { createAuthRouter } from './routes/auth'
 import { authMiddleware } from './middlewares/auth'
-import { settingsRouter } from './routes/settings'
+import { productsRouter } from './routes/products'
 
 const { PORT } = config
 
@@ -23,7 +23,8 @@ app.get('/', (_req, res) => {
 
 app.use('/api/auth', createAuthRouter())
 app.use('/api/users', createUserRouter())
-app.use('/api/settings', settingsRouter())
+
+app.use('/api/products', productsRouter())
 
 app.use((_req, res, _next) => {
   res.status(404).json({ error: 'Not Found' })

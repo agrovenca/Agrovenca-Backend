@@ -1,11 +1,12 @@
 import { UserModel } from '@/models/User'
-import { validateChangePassword, validatePartialUser } from '@/schemas/user'
+import { validateChangePassword, validatePartialUser } from '@/schemas/users'
 import { UserFilterParams } from '@/types/User'
 import { UnauthorizedError, ValidationError } from '@/utils/errors'
 import { logoutUser } from '@/utils/logoutUser'
 import { validatePasswords } from '@/utils/validatePasswords'
 import { Request, Response } from 'express'
 import { handleErrors } from '../handleErrors'
+import { validateUserAccountSchema } from '@/schemas/users'
 
 export class UserController {
   private model: typeof UserModel
@@ -111,6 +112,25 @@ export class UserController {
       await this.model.changePassword({ id, data: result.data })
 
       logoutUser(req, res, 'Contraseña cambiada correctamente')
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
+  changeUserAccount = async (req: Request, res: Response) => {
+    const { id } = req.params
+
+    try {
+      const result = validateUserAccountSchema(req.body)
+
+      if (!result.success || !result.data) {
+        res.status(400).json({ error: JSON.parse(result.error.message) })
+        return
+      }
+
+      const updated = await this.model.changeAccountOptions({ userId: id, data: result.data })
+
+      res.status(200).json({ user: updated, message: 'Usuario actualizado correctamente' })
     } catch (error) {
       handleErrors({ error, res })
     }

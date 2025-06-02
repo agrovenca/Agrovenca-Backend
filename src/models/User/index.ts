@@ -1,10 +1,10 @@
-import { UserChangePassword, UserUpdate } from '@/schemas/user'
+import { UserChangePassword, UserUpdate } from '@/schemas/users'
 import { Prisma, PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { config } from '@/config'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
 import { AppError, NotFoundError, ServerError, ValidationError } from '@/utils/errors'
-import { UserAccountSetting } from '@/schemas/settings/users'
+import { UserAccountSetting } from '@/schemas/users'
 import { UserFilterParams } from '@/types/User'
 
 const prisma = new PrismaClient()

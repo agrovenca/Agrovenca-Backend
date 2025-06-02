@@ -1,5 +1,5 @@
 import { AuthModel } from '@/models/Auth'
-import { validateResetPassword, validateUser, validateUserLogin } from '@/schemas/user'
+import { validateResetPassword, validateUser, validateUserLogin } from '@/schemas/users'
 import { sign } from 'jsonwebtoken'
 import { Request, Response } from 'express'
 import { config } from '@/config'
