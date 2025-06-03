@@ -3,7 +3,7 @@ import { requireAuth, requireRole } from '@/middlewares/auth'
 import { UnityModel } from '@/models/Unity'
 import { Router } from 'express'
 
-export const createUnitiesRouter = () => {
+export const unitiesRouter = () => {
   const router = Router()
   const controller = new UnityController({ model: UnityModel })
 

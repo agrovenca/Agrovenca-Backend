@@ -6,6 +6,7 @@ import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
 import { Request, Response } from 'express'
 import { exportDataToExcel, ExportDataToExcelType } from '@/utils/export/excel'
 import excelJs from 'exceljs'
+import { parseQueryArray } from '@/utils/parseQueryArray'
 
 export class ProductsController {
   private model: typeof ProductModel
@@ -18,7 +19,19 @@ export class ProductsController {
     const page = Math.max(Number(req.query.page) || 1, 1)
     const limit = Math.max(Number(req.query.limit) || 10, 1)
     const search = req.query.search?.toString() || ''
-    const categoryId = req.query.categoryId?.toString() || ''
+    const inStockOnly = req.query.inStockOnly
+    const priceRange = parseQueryArray(
+      req.query.priceRange as string | string[] | undefined,
+      Number,
+    )
+    const categoriesIds = parseQueryArray(
+      req.query.categoriesIds as string | string[] | undefined,
+      String,
+    )
+    const unitiesIds = parseQueryArray(
+      req.query.unitiesIds as string | string[] | undefined,
+      String,
+    )
 
     const offset = (page - 1) * limit
 
@@ -27,7 +40,10 @@ export class ProductsController {
         offset,
         limit,
         search,
-        categoryId,
+        categoriesIds,
+        unitiesIds,
+        priceRange,
+        inStockOnly: inStockOnly === undefined ? undefined : inStockOnly === 'true',
       })
 
       const totalPages = Math.ceil(totalItems / limit)

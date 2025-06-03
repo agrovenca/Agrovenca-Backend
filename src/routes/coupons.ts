@@ -3,7 +3,7 @@ import { requireAuth, requireRole } from '@/middlewares/auth'
 import { CouponModel } from '@/models/Coupon'
 import { Router } from 'express'
 
-export const createCouponsRouter = () => {
+export const couponsRouter = () => {
   const router = Router()
   const controller = new CouponController({ model: CouponModel })
 

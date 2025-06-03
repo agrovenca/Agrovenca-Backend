@@ -3,7 +3,7 @@ import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/err
 import { ProductCreateType, ProductUpdateType } from '@/schemas/products'
 import slugify from 'slugify'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
-import { ProductFilterParams } from '@/types/Product'
+import { ProductFilterParams2 } from '@/types/Product'
 
 const prisma = new PrismaClient()
 
@@ -22,9 +22,12 @@ async function generateUniqueSlug(text: string): Promise<string> {
 }
 
 export class ProductModel {
-  static async getAll(params: ProductFilterParams) {
+  static async getAll(params: ProductFilterParams2) {
     const search = params.search ?? ''
-    const categoryId = params.categoryId ?? ''
+    const categoriesIds = params.categoriesIds ?? []
+    const unitiesIds = params.unitiesIds ?? []
+    const priceRange = params.priceRange ?? []
+    const inStockOnly = params.inStockOnly
     const { limit: take, offset: skip } = params
 
     try {
@@ -34,8 +37,30 @@ export class ProductModel {
         whereClause.name = { contains: search, mode: 'insensitive' }
       }
 
-      if (categoryId) {
-        whereClause.categoryId = categoryId
+      if (categoriesIds && categoriesIds.length > 0) {
+        whereClause.categoryId = { in: categoriesIds }
+      }
+
+      if (unitiesIds && unitiesIds.length > 0) {
+        whereClause.unityId = { in: unitiesIds }
+      }
+
+      if (inStockOnly !== undefined) {
+        whereClause.stock = { gte: 0 }
+      }
+
+      if (priceRange && priceRange.length === 2) {
+        const [minPrice, maxPrice] = priceRange
+        whereClause.OR = [
+          { price: { gte: minPrice, lte: maxPrice } },
+          {
+            AND: [
+              { secondPrice: { not: null } },
+              { secondPrice: { not: 0 } },
+              { secondPrice: { gte: minPrice, lte: maxPrice } },
+            ],
+          },
+        ]
       }
 
       const [totalItems, objects] = await Promise.all([
@@ -51,6 +76,7 @@ export class ProductModel {
 
       return { objects, totalItems }
     } catch (error) {
+      console.log(error)
       if (error instanceof AppError) throw error
       throw new ServerError('Errror al intentar obtener los productos')
     }

@@ -6,6 +6,9 @@ import { createUserRouter } from './routes/users'
 import { createAuthRouter } from './routes/auth'
 import { authMiddleware } from './middlewares/auth'
 import { productsRouter } from './routes/products'
+import { categoriesRouter } from './routes/categories'
+import { couponsRouter } from './routes/coupons'
+import { unitiesRouter } from './routes/unities'
 
 const { PORT } = config
 
@@ -24,6 +27,9 @@ app.get('/', (_req, res) => {
 app.use('/api/auth', createAuthRouter())
 app.use('/api/users', createUserRouter())
 
+app.use('/api/categories', categoriesRouter())
+app.use('/api/coupons', couponsRouter())
+app.use('/api/unities', unitiesRouter())
 app.use('/api/products', productsRouter())
 
 app.use((_req, res, _next) => {

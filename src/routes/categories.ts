@@ -3,7 +3,7 @@ import { requireAuth, requireRole } from '@/middlewares/auth'
 import { CategoryModel } from '@/models/Category'
 import { Router } from 'express'
 
-export const createCategoriesRouter = () => {
+export const categoriesRouter = () => {
   const router = Router()
   const controller = new CategoriesController({ model: CategoryModel })
 
