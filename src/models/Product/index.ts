@@ -33,7 +33,7 @@ export class ProductModel {
     try {
       const whereClause: Prisma.ProductWhereInput = {}
 
-      if (search) {
+      if (search && search.length > 0) {
         whereClause.name = { contains: search, mode: 'insensitive' }
       }
 
