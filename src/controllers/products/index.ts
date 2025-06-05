@@ -15,6 +15,38 @@ export class ProductsController {
     this.model = model
   }
 
+  getSingle = async (req: Request, res: Response) => {
+    const { id } = req.params
+
+    if (!id || id.length < 1) {
+      res.status(400).json({ error: 'El ID del producto es necesario' })
+      return
+    }
+
+    try {
+      const object = await this.model.getSingle({ id })
+      if (!object) {
+        res.status(404).json({ error: 'No existe el producto', status: 404 })
+        return
+      }
+      const productWithSignedImages = {
+        ...object,
+        images: await Promise.all(
+          object.images.map(async (image) => ({
+            ...image,
+            s3Key: await getSignedImageUrl(image.s3Key),
+          })),
+        ),
+      }
+
+      res
+        .status(200)
+        .json({ product: productWithSignedImages, message: 'Producto obtenido exitosamente' })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
   getAll = async (req: Request, res: Response) => {
     const page = Math.max(Number(req.query.page) || 1, 1)
     const limit = Math.max(Number(req.query.limit) || 10, 1)

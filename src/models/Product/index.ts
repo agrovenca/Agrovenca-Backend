@@ -22,6 +22,16 @@ async function generateUniqueSlug(text: string): Promise<string> {
 }
 
 export class ProductModel {
+  static async getSingle({ id }: { id: string }) {
+    try {
+      const object = await prisma.product.findUnique({ where: { id }, include: { images: true } })
+      return object
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar obtener el producto')
+    }
+  }
+
   static async getAll(params: ProductFilterParams2) {
     const search = params.search ?? ''
     const categoriesIds = params.categoriesIds ?? []

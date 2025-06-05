@@ -9,6 +9,7 @@ export const productsRouter = () => {
   const controller = new ProductsController({ model: ProductModel })
 
   router.get('/', controller.getAll)
+  router.get('/:id', controller.getSingle)
 
   router.use(requireAuth)
   router.use(requireRole)
