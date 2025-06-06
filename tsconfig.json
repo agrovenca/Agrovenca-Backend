@@ -2,6 +2,7 @@
     "compilerOptions": {
       "module": "CommonJS",                  // Cambiar de "commonjs" a "ESNext"
       "target": "ES2022",
+      "resolveJsonModule": true,
       "moduleResolution": "Node",          // Asegura la resolución correcta de módulos
       "baseUrl": "./src",                  // Punto de partida para los imports
       "paths": {

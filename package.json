@@ -11,7 +11,12 @@
     "db:migrate": "pnpx prisma migrate dev",
     "db:studio": "pnpx prisma studio",
     "db:reset": "pnpx prisma migrate reset && pnpx prisma migrate dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "register:users": "ts-node-dev -r tsconfig-paths/register ./src/seed/users.ts",
+    "register:categories": "ts-node-dev -r tsconfig-paths/register ./src/seed/categories.ts",
+    "register:unities": "ts-node-dev -r tsconfig-paths/register ./src/seed/unities.ts",
+    "register:products": "ts-node-dev -r tsconfig-paths/register ./src/seed/products.ts",
+    "register:productImages": "ts-node-dev -r tsconfig-paths/register ./src/seed/productImages.ts"
   },
   "keywords": [],
   "author": "",
