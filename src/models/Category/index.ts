@@ -24,6 +24,7 @@ export class CategoryModel {
     try {
       const categories = await prisma.category.findMany({
         orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { products: true } } },
       })
 
       return categories

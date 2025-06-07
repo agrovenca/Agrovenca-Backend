@@ -24,6 +24,7 @@ export class UnityModel {
     try {
       const unities = await prisma.unity.findMany({
         orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { products: true } } },
       })
 
       return unities
