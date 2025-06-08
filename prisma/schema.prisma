@@ -81,9 +81,9 @@ enum CouponType {
 
 model Product {
   id           String   @id @default(uuid())
-  slug         String   @unique @db.VarChar(255)
-  name         String   @unique @db.VarChar(255)
-  description  String   @db.VarChar(800)
+  slug         String   @unique @db.VarChar(300)
+  name         String   @unique @db.VarChar(300)
+  description  String   @db.VarChar(900)
   price        Decimal  @default(0.0) @db.Decimal(7, 2)
   secondPrice  Decimal? @default(0.0) @db.Decimal(7, 2)
   stock        Int      @default(1)
