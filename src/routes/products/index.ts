@@ -10,6 +10,7 @@ export const productsRouter = () => {
 
   router.get('/', controller.getAll)
   router.get('/:id', controller.getSingle)
+  router.post('/validateCart', controller.validateCart)
 
   router.use(requireAuth)
   router.use(requireRole)

@@ -7,6 +7,11 @@ import { ProductFilterParams2 } from '@/types/Product'
 
 const prisma = new PrismaClient()
 
+export interface CartItem {
+  productId: string
+  quantity: number
+}
+
 async function generateUniqueSlug(text: string): Promise<string> {
   const baseSlug = slugify(text, { replacement: '-', lower: true, strict: true, trim: true })
   let slug = baseSlug
@@ -196,6 +201,51 @@ export class ProductModel {
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Error al actualizar el orden de los productos')
+    }
+  }
+
+  static async validateCart({ items }: { items: CartItem[] }) {
+    try {
+      const productIds = items.map((item) => item.productId)
+      const products = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        include: {
+          images: true,
+        },
+      })
+
+      const validatedItems = items.map((item) => {
+        const product = products.find((p) => p.id === item.productId)
+
+        if (!product) {
+          return {
+            ...item,
+            valid: false,
+            reason: 'Producto no disponible',
+            availableStock: 0,
+          }
+        }
+
+        if (product.stock < item.quantity) {
+          return {
+            ...item,
+            valid: false,
+            reason: `Stock insuficiente (disponible: ${product.stock})`,
+            availableStock: product.stock,
+          }
+        }
+
+        return {
+          ...item,
+          valid: true,
+          product: product,
+        }
+      })
+
+      return validatedItems
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al validar los productos del carrito')
     }
   }
 }

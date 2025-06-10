@@ -1,5 +1,5 @@
 import { handleErrors } from '@/controllers/handleErrors'
-import { ProductModel } from '@/models/Product'
+import { CartItem, ProductModel } from '@/models/Product'
 import { validateProductCreate, validateProductUpdate } from '@/schemas/products'
 import { NotFoundError } from '@/utils/errors'
 import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
@@ -270,5 +270,12 @@ export class ProductsController {
     } catch (error) {
       handleErrors({ error, res })
     }
+  }
+
+  validateCart = async (req: Request, res: Response) => {
+    const cartItems: CartItem[] = req.body.items
+
+    const validatedItems = await this.model.validateCart({ items: cartItems })
+    res.send({ items: validatedItems, messgae: 'Productos del carrito validados' })
   }
 }
