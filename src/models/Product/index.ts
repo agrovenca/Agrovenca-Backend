@@ -230,7 +230,7 @@ export class ProductModel {
           return {
             ...item,
             valid: false,
-            reason: `Stock insuficiente (disponible: ${product.stock})`,
+            reason: `${product.name} Stock insuficiente`,
             availableStock: product.stock,
           }
         }
