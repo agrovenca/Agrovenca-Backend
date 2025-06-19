@@ -19,9 +19,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  categories    Category[]      @relation("UserCategories")
-  resetPassword ResetPassword[] @relation("UserResetPassword")
-  products      Product[]       @relation("UserProducts")
+  categories        Category[]        @relation("UserCategories")
+  resetPassword     ResetPassword[]   @relation("UserResetPassword")
+  products          Product[]         @relation("UserProducts")
+  shippingAddresses ShippingAddress[] @relation("UserShippingAddresses")
 }
 
 model ResetPassword {
@@ -115,4 +116,21 @@ model Image {
   createdAt    DateTime @default(now())
 
   @@index([productId])
+}
+
+model ShippingAddress {
+  pk             String  @id @default(uuid())
+  alias          String  @db.VarChar(100)
+  name           String  @db.VarChar(150)
+  lastName       String  @db.VarChar(150)
+  email          String
+  phone          String  @db.VarChar(30)
+  address_line_1 String  @db.VarChar(250)
+  country        String
+  state          String
+  city           String
+  isDefault      Boolean @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserShippingAddresses")
 }
