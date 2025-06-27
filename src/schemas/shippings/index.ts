@@ -33,28 +33,36 @@ export const CountryStates = {
 
 const CountrySchema = z.enum(['Venezuela'])
 
-export const AddressSchema = z
-  .object({
-    alias: z.string().min(2, { message: 'Alias es requerido' }).max(50),
-    name: z.string().min(2, { message: 'Nombre es requerido' }).max(150),
-    lastName: z.string().min(2, { message: 'Apellido es requerido' }).max(150),
-    email: z.string().email({ message: 'Correo electrónico requerido' }),
-    phone: z.string().min(8, { message: 'Número de teléfono requerido' }),
-    address_line_1: z
-      .string()
-      .min(10, { message: 'Dirección es requerida' })
-      .max(250, { message: 'No más de 250 caracteres' }),
-    country: CountrySchema,
-    state: z.string({ required_error: 'Estado/provincia es requerido' }),
-    city: z.string().min(2, { message: 'Ciudad es requerida' }),
-  })
-  .refine(({ country, state }) => (CountryStates[country] as readonly string[]).includes(state), {
+export const AddressBaseSchema = z.object({
+  alias: z.string().min(2, { message: 'Alias es requerido' }).max(50),
+  name: z.string().min(2, { message: 'Nombre es requerido' }).max(150),
+  lastName: z.string().min(2, { message: 'Apellido es requerido' }).max(150),
+  email: z.string().email({ message: 'Correo electrónico requerido' }),
+  phone: z.string().min(8, { message: 'Número de teléfono requerido' }),
+  address_line_1: z
+    .string()
+    .min(10, { message: 'Dirección es requerida' })
+    .max(250, { message: 'No más de 250 caracteres' }),
+  country: CountrySchema,
+  state: z.string({ required_error: 'Estado/provincia es requerido' }),
+  city: z.string().min(2, { message: 'Ciudad es requerida' }),
+})
+
+export const AddressCreateSchema = AddressBaseSchema.refine(
+  ({ country, state }) => (CountryStates[country] as readonly string[]).includes(state),
+  {
     path: ['state'],
     message: 'Estado o provincia no pertenece al país seleccionado',
-  })
+  },
+)
 
-export type AddressType = z.infer<typeof AddressSchema>
+export type AddressType = z.infer<typeof AddressCreateSchema>
+export type AddressPartialType = Partial<z.infer<typeof AddressBaseSchema>>
 
 export const validateAddress = (address: AddressType) => {
-  return AddressSchema.safeParse(address)
+  return AddressCreateSchema.safeParse(address)
+}
+
+export const validateAddressUpdate = (address: Partial<AddressType>) => {
+  return AddressBaseSchema.partial().safeParse(address)
 }

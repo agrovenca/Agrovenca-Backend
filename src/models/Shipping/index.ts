@@ -1,5 +1,6 @@
-import { AddressType } from '@/schemas/shippings'
-import { AppError, ConflictError, ServerError } from '@/utils/errors'
+import { AddressPartialType, AddressType } from '@/schemas/shippings'
+import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
+import { getDataForUpdate } from '@/utils/getDataForUpdate'
 import { Prisma, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -45,6 +46,27 @@ export class ShippingModel {
       }
       if (error instanceof AppError) throw error
       throw new ServerError('Error al intentar crear la dirección')
+    }
+  }
+
+  static async update({ id, data }: { id: string; data: AddressPartialType }) {
+    const newData = getDataForUpdate(data)
+
+    try {
+      const address = await prisma.shippingAddress.findUnique({
+        where: { pk: id },
+      })
+
+      if (!address) throw new NotFoundError('Dirección no encontrada')
+
+      const updated = await prisma.shippingAddress.update({
+        where: { pk: id },
+        data: newData,
+      })
+      return updated
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar actualizar la dirección')
     }
   }
 }
