@@ -65,4 +65,15 @@ export class ShippingController {
       handleErrors({ error, res })
     }
   }
+
+  delete = async (req: Request, res: Response) => {
+    const { id } = req.params
+
+    try {
+      const deletedObject = await this.model.delete({ id })
+      res.send({ address: deletedObject, message: 'Dirección eliminada exitosamente.' })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
 }

@@ -69,4 +69,23 @@ export class ShippingModel {
       throw new ServerError('Error al intentar actualizar la dirección')
     }
   }
+
+  static async delete({ id }: { id: string }) {
+    try {
+      const address = await prisma.shippingAddress.findUnique({
+        where: { pk: id },
+      })
+
+      if (!address) throw new NotFoundError('Dirección no encontrada')
+
+      const deleted = await prisma.shippingAddress.delete({
+        where: { pk: id },
+      })
+
+      return deleted
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar eliminar la dirección')
+    }
+  }
 }
