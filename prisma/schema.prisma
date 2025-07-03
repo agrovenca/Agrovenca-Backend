@@ -62,17 +62,19 @@ model Unity {
 }
 
 model Coupon {
-  id          String     @id @default(uuid())
-  code        String     @unique @db.VarChar(50)
-  description String?    @db.VarChar(255)
-  discount    Float      @default(0.0)
-  active      Boolean    @default(true)
-  type        CouponType @default(PERCENTAGE)
-  usageLimit  Int?
-  timesUsed   Int        @default(0)
-  expiresAt   DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id              String     @id @default(uuid())
+  code            String     @unique @db.VarChar(50)
+  description     String?    @db.VarChar(255)
+  discount        Float      @default(0.0)
+  active          Boolean    @default(true)
+  type            CouponType @default(PERCENTAGE)
+  usageLimit      Int?
+  timesUsed       Int        @default(0)
+  minPurchase     Float?
+  validCategories String[]
+  expiresAt       DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
 
 enum CouponType {
