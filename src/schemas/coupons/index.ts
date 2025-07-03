@@ -8,6 +8,11 @@ export const CouponSchema = z.object({
   type: z.enum(['PERCENTAGE', 'FIXED']),
   usageLimit: z.number().optional(),
   timesUsed: z.number().default(0).optional(),
+  minPurchase: z.coerce.number().gte(0, { message: 'No puede ser menor que 0' }).optional(),
+  validCategories: z
+    .array(z.string())
+    .max(10, { message: 'No pueden ser más de 10 categorías' })
+    .optional(),
   expiresAt: z
     .string()
     .transform((val) => new Date(val))
