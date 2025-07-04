@@ -23,6 +23,7 @@ model User {
   resetPassword     ResetPassword[]   @relation("UserResetPassword")
   products          Product[]         @relation("UserProducts")
   shippingAddresses ShippingAddress[] @relation("UserShippingAddresses")
+  orders            Order[]           @relation("UserOrders")
 }
 
 model ResetPassword {
@@ -75,6 +76,8 @@ model Coupon {
   expiresAt       DateTime?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+
+  orders Order[] @relation("OrderCoupon")
 }
 
 enum CouponType {
@@ -100,10 +103,11 @@ model Product {
   categoryId String
   unityId    String
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserProducts")
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, name: "CategoryProducts")
-  unity    Unity    @relation(fields: [unityId], references: [id], onDelete: Cascade, name: "UnityProducts")
-  images   Image[]  @relation("ProductImages")
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserProducts")
+  category Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade, name: "CategoryProducts")
+  unity    Unity       @relation(fields: [unityId], references: [id], onDelete: Cascade, name: "UnityProducts")
+  images   Image[]     @relation("ProductImages")
+  orders   OrderItem[] @relation("OrderItemProduct")
 
   @@index([categoryId, displayOrder])
   @@index([unityId])
@@ -135,5 +139,48 @@ model ShippingAddress {
   createdAt      DateTime @default(now())
 
   userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserShippingAddresses")
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserShippingAddresses")
+  orders Order[] @relation("OrderShipping")
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  shippingId String?
+  couponId   String?
+  total      Decimal     @default(0.0) @db.Decimal(10, 2)
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserOrders")
+  shipping ShippingAddress? @relation(fields: [shippingId], references: [pk], onDelete: Cascade, name: "OrderShipping")
+  coupon   Coupon?          @relation(fields: [couponId], references: [id], onDelete: SetNull, name: "OrderCoupon")
+
+  items OrderItem[] @relation("OrderItems")
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int      @default(1)
+  price     Decimal  @default(0.0) @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade, name: "OrderItems")
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade, name: "OrderItemProduct")
+
+  @@index([orderId])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
 }
