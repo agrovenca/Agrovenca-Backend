@@ -19,6 +19,28 @@ export class CouponModel {
     }
   }
 
+  static async getObject({ code }: { code: string }) {
+    try {
+      const object = await prisma.coupon.findUnique({
+        where: { code },
+      })
+
+      if (!object) throw new NotFoundError(`Cupón con código ${code} no existe`)
+      if (object.expiresAt && object.expiresAt < new Date()) {
+        throw new NotFoundError(`Cupón con código ${code} ha expirado`)
+      }
+      if (!object.active) throw new NotFoundError(`Cupón con código ${code} no está activo`)
+      if (object.usageLimit && object.usageLimit <= object.timesUsed) {
+        throw new NotFoundError(`Cupón con código ${code} ha alcanzado su límite de uso`)
+      }
+
+      return object
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar obtener el cupón')
+    }
+  }
+
   static async create({ data }: { data: Coupon }) {
     try {
       const newObject = await prisma.coupon.create({

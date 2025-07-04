@@ -8,11 +8,11 @@ export const couponsRouter = () => {
   const controller = new CouponController({ model: CouponModel })
 
   router.get('/', controller.getAll)
-  // router.get('/:id', controller.getObject)
 
   router.use(requireAuth)
-  router.use(requireRole)
+  router.get('/:code', controller.getObject)
 
+  router.use(requireRole)
   router.post('/', controller.create)
   router.patch('/:id', controller.update)
   router.delete('/:id', controller.delete)

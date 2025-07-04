@@ -20,6 +20,17 @@ export class CouponController {
     }
   }
 
+  getObject = async (req: Request, res: Response) => {
+    const { code } = req.params
+
+    try {
+      const object = await this.model.getObject({ code })
+      res.status(200).send({ coupon: object, message: 'Cupón obtenido correctamente' })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
   create = async (req: Request, res: Response) => {
     try {
       const result = validateCoupon(req.body)
