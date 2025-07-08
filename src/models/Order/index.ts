@@ -5,6 +5,32 @@ import { Prisma, PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export class OrderModel {
+  static async getAll({ userId }: { userId: string }) {
+    try {
+      const orders = await prisma.order.findMany({
+        where: { userId },
+        orderBy: [{ createdAt: 'desc' }],
+        include: {
+          items: true,
+          shipping: true,
+          coupon: {
+            select: {
+              code: true,
+              discount: true,
+            },
+          },
+        },
+      })
+
+      if (!orders || orders.length === 0) throw new NotFoundError('No se encontraron órdenes')
+
+      return orders
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar obtener las órdenes')
+    }
+  }
+
   static async getById(id: string) {
     try {
       const order = await prisma.order.findUnique({

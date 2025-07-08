@@ -10,6 +10,20 @@ export class OrderController {
     this.model = model
   }
 
+  getAll = async (req: Request, res: Response) => {
+    const { user } = req
+    try {
+      if (!user) {
+        res.status(401).json({ error: 'Usuario no autenticado' })
+        return
+      }
+      const objects = await this.model.getAll({ userId: user.id })
+      res.status(200).send(objects)
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
   getOrderById = async (req: Request, res: Response) => {
     const { id } = req.params
     try {
