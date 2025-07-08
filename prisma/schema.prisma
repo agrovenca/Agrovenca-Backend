@@ -144,10 +144,13 @@ model ShippingAddress {
 }
 
 model Order {
-  id         String      @id @default(uuid())
+  id         String      @id
   userId     String
   shippingId String?
   couponId   String?
+  tax        Decimal     @default(0.0) @db.Decimal(10, 2)
+  subtotal   Decimal     @default(0.0) @db.Decimal(10, 2)
+  discount   Decimal     @default(0.0) @db.Decimal(10, 2)
   total      Decimal     @default(0.0) @db.Decimal(10, 2)
   status     OrderStatus @default(PENDING)
   createdAt  DateTime    @default(now())

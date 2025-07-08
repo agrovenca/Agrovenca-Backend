@@ -1,0 +1,45 @@
+import { OrderModel } from '@/models/Order'
+import { Request, Response } from 'express'
+import { handleErrors } from '../handleErrors'
+import { validateOrderCreate } from '@/schemas/orders'
+
+export class OrderController {
+  private model: typeof OrderModel
+
+  constructor({ model }: { model: typeof OrderModel }) {
+    this.model = model
+  }
+
+  getOrderById = async (req: Request, res: Response) => {
+    const { id } = req.params
+    try {
+      const order = await this.model.getById(id)
+      res.status(200).send({ order, message: 'Orden obtenida correctamente' })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
+  create = async (req: Request, res: Response) => {
+    const { user } = req
+
+    try {
+      const result = validateOrderCreate(req.body)
+
+      if (!result.success || !result.data) {
+        res.status(400).json({ error: JSON.parse(result.error.message) })
+        return
+      }
+
+      if (!user) {
+        res.status(401).json({ error: 'Usuario no autenticado' })
+        return
+      }
+
+      const newOrder = await this.model.create({ data: result.data, userId: user.id })
+      res.status(201).send({ order: newOrder, message: 'Orden creada correctamente' })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+}

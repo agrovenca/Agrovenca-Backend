@@ -1,0 +1,91 @@
+import { OrderCreateType } from '@/schemas/orders'
+import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
+import { Prisma, PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export class OrderModel {
+  static async getById(id: string) {
+    try {
+      const order = await prisma.order.findUnique({
+        where: { id },
+        include: {
+          coupon: {
+            select: {
+              code: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          items: {
+            select: {
+              id: true,
+              productId: true,
+              quantity: true,
+              price: true,
+              product: {
+                select: {
+                  name: true,
+                  images: true,
+                },
+              },
+            },
+          },
+          shipping: true,
+        },
+      })
+
+      if (!order) throw new NotFoundError(`La orden no existe`)
+
+      return order
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar obtener la orden')
+    }
+  }
+
+  static async create({ data, userId }: { data: OrderCreateType; userId: string }) {
+    try {
+      const { couponId, shippingAddressId, products, ...rest } = data
+      const newOrder = await prisma.order.create({
+        data: {
+          ...rest,
+          coupon: couponId
+            ? {
+                connect: { id: couponId },
+              }
+            : undefined,
+          items: {
+            createMany: {
+              data: products.map((prod) => ({
+                productId: prod.id,
+                quantity: prod.quantity,
+                price: prod.price,
+              })),
+            },
+          },
+          shipping: {
+            connect: { pk: shippingAddressId },
+          },
+          user: {
+            connect: { id: userId },
+          },
+        },
+      })
+      return newOrder
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictError('La orden ya existe')
+        }
+      }
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar crear la orden')
+    }
+  }
+}

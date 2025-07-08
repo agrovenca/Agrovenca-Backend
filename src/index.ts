@@ -10,6 +10,7 @@ import { categoriesRouter } from './routes/categories'
 import { couponsRouter } from './routes/coupons'
 import { unitiesRouter } from './routes/unities'
 import { shippingRouter } from './routes/shipping'
+import { ordersRouter } from './routes/orders'
 
 const { PORT } = config
 
@@ -33,6 +34,7 @@ app.use('/api/coupons', couponsRouter())
 app.use('/api/unities', unitiesRouter())
 app.use('/api/products', productsRouter())
 app.use('/api/shippings', shippingRouter())
+app.use('/api/orders', ordersRouter())
 
 app.use((_req, res, _next) => {
   res.status(404).json({ error: 'Not Found' })
