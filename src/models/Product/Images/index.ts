@@ -8,7 +8,6 @@ import {
 } from '@/utils/errors'
 import { ImageCreateType } from '@/schemas/images'
 import { MulterS3File } from '@/types/shared'
-import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
 import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { config } from '@/config'
 import { s3 } from '@/utils/s3/s3Uploader'
@@ -61,13 +60,7 @@ export class ProductImagesModel {
       })
 
       const images = await prisma.image.findMany({ where: { productId } })
-      const imagesWithSignedUrls = await Promise.all(
-        images.map(async (img) => ({
-          ...img,
-          s3Key: await getSignedImageUrl(img.s3Key),
-        })),
-      )
-      return imagesWithSignedUrls
+      return images
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -126,32 +119,22 @@ export class ProductImagesModel {
       await Promise.all([deleteS3Promise, deleteImagePromise])
 
       // 3. Actualizar el orden y obtener las imágenes en una sola transacción
-      const updatedImages = await prisma
-        .$transaction([
-          prisma.image.updateMany({
-            where: {
-              productId: productId,
-              displayOrder: { gt: image.displayOrder },
-            },
-            data: {
-              displayOrder: { decrement: 1 },
-            },
-          }),
-          prisma.image.findMany({
-            where: { productId },
-            orderBy: { displayOrder: 'asc' },
-          }),
-        ])
-        .then(async ([_, images]) => {
-          // 4. Firmar URLs
-          const signedImages = await Promise.all(
-            images.map(async (img) => ({
-              ...img,
-              s3Key: await getSignedImageUrl(img.s3Key),
-            })),
-          )
-          return signedImages
-        })
+      const updatedImages = await prisma.$transaction([
+        prisma.image.updateMany({
+          where: {
+            productId: productId,
+            displayOrder: { gt: image.displayOrder },
+          },
+          data: {
+            displayOrder: { decrement: 1 },
+          },
+        }),
+        prisma.image.findMany({
+          where: { productId },
+          orderBy: { displayOrder: 'asc' },
+        }),
+      ])
+
       return updatedImages
     } catch (error) {
       if (error instanceof AppError) throw error

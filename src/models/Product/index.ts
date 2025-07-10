@@ -27,13 +27,16 @@ async function generateUniqueSlug(text: string): Promise<string> {
 }
 
 export class ProductModel {
-  static async getSingle({ id }: { id: string }) {
+  static async getSingle({ slug }: { slug: string }) {
     try {
-      const object = await prisma.product.findUnique({ where: { id }, include: { images: true } })
+      const object = await prisma.product.findUnique({
+        where: { slug },
+        include: { images: true },
+      })
       return object
     } catch (error) {
       if (error instanceof AppError) throw error
-      throw new ServerError('Error al intentar obtener el producto')
+      throw new ServerError('Error al intentar obtener el producto por slug')
     }
   }
 

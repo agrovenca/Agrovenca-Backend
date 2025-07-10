@@ -11,7 +11,20 @@ export class OrderModel {
         where: { userId },
         orderBy: [{ createdAt: 'desc' }],
         include: {
-          items: true,
+          items: {
+            select: {
+              id: true,
+              productId: true,
+              quantity: true,
+              price: true,
+              product: {
+                select: {
+                  name: true,
+                  images: true,
+                },
+              },
+            },
+          },
           shipping: true,
           coupon: {
             select: {

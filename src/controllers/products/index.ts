@@ -2,7 +2,6 @@ import { handleErrors } from '@/controllers/handleErrors'
 import { CartItem, ProductModel } from '@/models/Product'
 import { validateProductCreate, validateProductUpdate } from '@/schemas/products'
 import { NotFoundError } from '@/utils/errors'
-import { getSignedImageUrl } from '@/utils/s3/s3SignedUrl'
 import { Request, Response } from 'express'
 import { exportDataToExcel, ExportDataToExcelType } from '@/utils/export/excel'
 import excelJs from 'exceljs'
@@ -16,32 +15,24 @@ export class ProductsController {
   }
 
   getSingle = async (req: Request, res: Response) => {
-    const { id } = req.params
+    const { slug } = req.params
 
-    if (!id || id.length < 1) {
-      res.status(400).json({ error: 'El ID del producto es necesario' })
+    if (!slug || slug.length < 1) {
+      res.status(400).json({ error: 'El slug del producto es necesario' })
       return
     }
 
     try {
-      const object = await this.model.getSingle({ id })
+      const object = await this.model.getSingle({ slug })
       if (!object) {
         res.status(404).json({ error: 'No existe el producto', status: 404 })
         return
       }
-      const productWithSignedImages = {
-        ...object,
-        images: await Promise.all(
-          object.images.map(async (image) => ({
-            ...image,
-            s3Key: await getSignedImageUrl(image.s3Key),
-          })),
-        ),
-      }
 
-      res
-        .status(200)
-        .json({ product: productWithSignedImages, message: 'Producto obtenido exitosamente' })
+      res.status(200).json({
+        product: object,
+        message: 'Producto obtenido exitosamente',
+      })
     } catch (error) {
       handleErrors({ error, res })
     }
@@ -79,20 +70,9 @@ export class ProductsController {
       })
 
       const totalPages = Math.ceil(totalItems / limit)
-      const productsWithSignedImages = await Promise.all(
-        objects.map(async (product) => ({
-          ...product,
-          images: await Promise.all(
-            product.images.map(async (image) => ({
-              ...image,
-              s3Key: await getSignedImageUrl(image.s3Key),
-            })),
-          ),
-        })),
-      )
 
       res.json({
-        objects: productsWithSignedImages,
+        objects,
         page: page,
         totalItems: totalItems,
         totalPages: totalPages,
@@ -120,18 +100,10 @@ export class ProductsController {
       }
 
       const newObject = await this.model.create({ userId: user.id, data: result.data })
-      const productWithSignedImages = {
-        ...newObject,
-        images: await Promise.all(
-          newObject.images.map(async (image) => ({
-            ...image,
-            s3Key: await getSignedImageUrl(image.s3Key),
-          })),
-        ),
-      }
-      res
-        .status(201)
-        .json({ product: productWithSignedImages, message: 'Producto creado correctamente' })
+      res.status(201).json({
+        product: newObject,
+        message: 'Producto creado correctamente',
+      })
     } catch (error) {
       handleErrors({ error, res })
     }
@@ -149,19 +121,11 @@ export class ProductsController {
       }
 
       const updatedObject = await this.model.update({ id, data: result.data })
-      const productWithSignedImages = {
-        ...updatedObject,
-        images: await Promise.all(
-          updatedObject.images.map(async (image) => ({
-            ...image,
-            s3Key: await getSignedImageUrl(image.s3Key),
-          })),
-        ),
-      }
 
-      res
-        .status(200)
-        .json({ product: productWithSignedImages, message: 'Producto actualizado exitosamente' })
+      res.status(200).json({
+        product: updatedObject,
+        message: 'Producto actualizado exitosamente',
+      })
     } catch (error) {
       handleErrors({ error, res })
     }
@@ -276,6 +240,9 @@ export class ProductsController {
     const cartItems: CartItem[] = req.body.items
 
     const validatedItems = await this.model.validateCart({ items: cartItems })
-    res.send({ items: validatedItems, messgae: 'Productos del carrito validados' })
+    res.send({
+      items: validatedItems,
+      message: 'Productos del carrito validados',
+    })
   }
 }
