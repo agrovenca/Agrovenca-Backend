@@ -15,7 +15,8 @@ export const CouponSchema = z.object({
     .optional(),
   expiresAt: z
     .string()
-    .transform((val) => new Date(val))
+    .nullable()
+    .transform((val) => (val ? new Date(val) : null))
     .optional(),
 })
 

@@ -48,7 +48,7 @@ export class CouponController {
 
       const newObject = await this.model.create({ data: result.data })
       res.status(201).send({
-        newObject,
+        coupon: newObject,
         message: 'Cupón creado correctamente',
       })
     } catch (error) {

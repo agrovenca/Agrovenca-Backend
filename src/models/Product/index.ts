@@ -94,7 +94,6 @@ export class ProductModel {
 
       return { objects, totalItems }
     } catch (error) {
-      console.log(error)
       if (error instanceof AppError) throw error
       throw new ServerError('Errror al intentar obtener los productos')
     }
