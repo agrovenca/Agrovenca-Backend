@@ -7,6 +7,8 @@ import { validatePasswords } from '@/utils/validatePasswords'
 import { Request, Response } from 'express'
 import { handleErrors } from '../handleErrors'
 import { validateUserAccountSchema } from '@/schemas/users'
+import { getCommonQueryFilters } from '@/utils/getCommonQueryFilters'
+import { getPaginationData } from '@/utils/getPaginationData'
 
 export class UserController {
   private model: typeof UserModel
@@ -16,9 +18,7 @@ export class UserController {
   }
 
   getAll = async (req: Request, res: Response) => {
-    const page = Math.max(Number(req.query.page) || 1, 1)
-    const limit = Math.max(Number(req.query.limit) || 10, 1)
-    const search = req.query.search?.toString() || ''
+    const { limit, page, search } = getCommonQueryFilters(req.query)
     const isActive = req.query.isActive as UserFilterParams['isActive']
 
     const offset = (page - 1) * limit
@@ -35,13 +35,9 @@ export class UserController {
 
       res.json({
         objects: objects,
-        page: page,
-        totalItems: totalItems,
-        totalPages: totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-        nextPage: page < totalPages ? page + 1 : null,
-        previousPage: page > 1 ? page - 1 : null,
+        pagination: {
+          ...getPaginationData({ page, totalItems, totalPages }),
+        },
       })
     } catch (error) {
       handleErrors({ error, res })
