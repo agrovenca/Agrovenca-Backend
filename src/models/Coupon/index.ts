@@ -54,16 +54,16 @@ export class CouponModel {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ConflictError('La categoría ya existe')
+          throw new ConflictError('El cupón ya existe')
         }
       }
       if (error instanceof AppError) throw error
-      throw new ServerError('Error al intentar crear la categoría')
+      throw new ServerError('Error al intentar crear el cupón')
     }
   }
 
   static async update({ id, data }: { id: string; data: Partial<CouponUpdateType> }) {
-    const newData = getDataForUpdate(data)
+    const newData = getDataForUpdate(data, ['expiresAt'])
 
     try {
       const coupon = await prisma.coupon.findUnique({ where: { id } })
