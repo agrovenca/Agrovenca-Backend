@@ -6,6 +6,8 @@ import { Request, Response } from 'express'
 import { exportDataToExcel, ExportDataToExcelType } from '@/utils/export/excel'
 import excelJs from 'exceljs'
 import { parseQueryArray } from '@/utils/parseQueryArray'
+import { getPaginationData } from '@/utils/getPaginationData'
+import { getCommonQueryFilters } from '@/utils/getCommonQueryFilters'
 
 export class ProductsController {
   private model: typeof ProductModel
@@ -39,9 +41,7 @@ export class ProductsController {
   }
 
   getAll = async (req: Request, res: Response) => {
-    const page = Math.max(Number(req.query.page) || 1, 1)
-    const limit = Math.max(Number(req.query.limit) || 10, 1)
-    const search = req.query.search?.toString() || ''
+    const { limit, page, search } = getCommonQueryFilters(req.query)
     const inStockOnly = req.query.inStockOnly
     const priceRange = parseQueryArray(
       req.query.priceRange as string | string[] | undefined,
@@ -73,13 +73,9 @@ export class ProductsController {
 
       res.json({
         objects,
-        page: page,
-        totalItems: totalItems,
-        totalPages: totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-        nextPage: page < totalPages ? page + 1 : null,
-        previousPage: page > 1 ? page - 1 : null,
+        pagination: {
+          ...getPaginationData({ page, totalItems, totalPages }),
+        },
       })
     } catch (error) {
       handleErrors({ error, res })
