@@ -3,7 +3,7 @@ import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/err
 import { ProductCreateType, ProductUpdateType } from '@/schemas/products'
 import slugify from 'slugify'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
-import { ProductFilterParams2 } from '@/types/Product'
+import { ProductFilterParams } from '@/types/Product'
 
 const prisma = new PrismaClient()
 
@@ -40,7 +40,7 @@ export class ProductModel {
     }
   }
 
-  static async getAll(params: ProductFilterParams2) {
+  static async getAll(params: ProductFilterParams) {
     const search = params.search ?? ''
     const categoriesIds = params.categoriesIds ?? []
     const unitiesIds = params.unitiesIds ?? []

@@ -10,7 +10,7 @@ export const ProductCreateSchema = z.object({
   secondPrice: z.number().optional().default(0.0),
   stock: z.number().default(1),
   freeShipping: z.boolean(),
-  videoId: z.string().optional(),
+  videoId: z.union([z.string(), z.null()]).optional(),
 
   categoryId: z.string().uuid(),
   unityId: z.string().uuid(),
