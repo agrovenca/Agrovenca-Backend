@@ -56,12 +56,13 @@ export class ProductsController {
       String,
     )
 
-    const offset = (page - 1) * limit
+    const numericLimit = limit === 0 ? undefined : Number(limit)
+    const offset = numericLimit ? (page - 1) * numericLimit : undefined
 
     try {
       const { objects, totalItems } = await this.model.getAll({
         offset,
-        limit,
+        limit: numericLimit,
         search,
         categoriesIds,
         unitiesIds,
@@ -69,7 +70,7 @@ export class ProductsController {
         inStockOnly: inStockOnly === undefined ? undefined : inStockOnly === 'true',
       })
 
-      const totalPages = Math.ceil(totalItems / limit)
+      const totalPages = numericLimit ? Math.ceil(totalItems / numericLimit) : 1
 
       res.json({
         objects,
