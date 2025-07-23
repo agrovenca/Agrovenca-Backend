@@ -47,8 +47,8 @@ export class ProductsController {
       req.query.priceRange as string | string[] | undefined,
       Number,
     )
-    const categoriesIds = parseQueryArray(
-      req.query.categoriesIds as string | string[] | undefined,
+    const categoriesId = parseQueryArray(
+      req.query.categoriesId as string | string[] | undefined,
       String,
     )
     const unitiesIds = parseQueryArray(
@@ -64,7 +64,7 @@ export class ProductsController {
         offset,
         limit: numericLimit,
         search,
-        categoriesIds,
+        categoriesId,
         unitiesIds,
         priceRange,
         inStockOnly: inStockOnly === undefined ? undefined : inStockOnly === 'true',
