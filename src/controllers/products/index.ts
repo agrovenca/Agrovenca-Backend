@@ -51,10 +51,7 @@ export class ProductsController {
       req.query.categoriesId as string | string[] | undefined,
       String,
     )
-    const unitiesIds = parseQueryArray(
-      req.query.unitiesIds as string | string[] | undefined,
-      String,
-    )
+    const unitiesId = parseQueryArray(req.query.unitiesId as string | string[] | undefined, String)
 
     const numericLimit = limit === 0 ? undefined : Number(limit)
     const offset = numericLimit ? (page - 1) * numericLimit : undefined
@@ -65,7 +62,7 @@ export class ProductsController {
         limit: numericLimit,
         search,
         categoriesId,
-        unitiesIds,
+        unitiesId,
         priceRange,
         inStockOnly: inStockOnly === undefined ? undefined : inStockOnly === 'true',
       })

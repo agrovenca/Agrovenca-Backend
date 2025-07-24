@@ -48,7 +48,7 @@ export class ProductModel {
   static async getAll(params: ProductFilterParams) {
     const search = params.search ?? ''
     const categoriesId = params.categoriesId ?? []
-    const unitiesIds = params.unitiesIds ?? []
+    const unitiesId = params.unitiesId ?? []
     const priceRange = params.priceRange ?? []
     const inStockOnly = params.inStockOnly
     const { limit: take, offset: skip } = params
@@ -64,8 +64,8 @@ export class ProductModel {
         whereClause.categoryId = { in: categoriesId }
       }
 
-      if (unitiesIds && unitiesIds.length > 0) {
-        whereClause.unityId = { in: unitiesIds }
+      if (unitiesId && unitiesId.length > 0) {
+        whereClause.unityId = { in: unitiesId }
       }
 
       if (inStockOnly !== undefined) {
