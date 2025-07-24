@@ -2,7 +2,7 @@ import { BaseFilterParams } from '../shared'
 
 export interface ProductFilterParams extends BaseFilterParams {
   categoriesId?: string[]
-  unitiesIds?: string[]
+  unitiesId?: string[]
   priceRange?: number[]
   inStockOnly?: boolean
 }
