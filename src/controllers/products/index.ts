@@ -169,6 +169,30 @@ export class ProductsController {
     }
   }
 
+  updateOrderManual = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params
+      const { displayOrder } = req.body
+
+      if (typeof id !== 'string' || typeof displayOrder !== 'number') {
+        res.status(400).json({
+          error:
+            'El cuerpo de la solicitud debe contener un "id" (string) y un "displayOrder" (number)',
+        })
+        return
+      }
+
+      const result = await this.model.updateSingleOrder({ id, displayOrder })
+
+      res.status(200).json({
+        message: 'Orden actualizado correctamente',
+        result: result,
+      })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
   export = async (req: Request, res: Response) => {
     try {
       const { format } = req.params

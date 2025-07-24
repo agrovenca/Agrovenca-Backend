@@ -12,6 +12,11 @@ export interface CartItem {
   quantity: number
 }
 
+interface UpdateOrderParams {
+  id: string
+  displayOrder: number
+}
+
 async function generateUniqueSlug(text: string): Promise<string> {
   const baseSlug = slugify(text, { replacement: '-', lower: true, strict: true, trim: true })
   let slug = baseSlug
@@ -190,7 +195,7 @@ export class ProductModel {
     }
   }
 
-  static async updateOrder(updatedProducts: { id: string; displayOrder: number }[]) {
+  static async updateOrder(updatedProducts: UpdateOrderParams[]) {
     try {
       const updateOperations = updatedProducts.map((product) =>
         prisma.product.update({
@@ -203,6 +208,61 @@ export class ProductModel {
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Error al actualizar el orden de los productos')
+    }
+  }
+
+  static async updateSingleOrder({ id, displayOrder }: UpdateOrderParams) {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const product = await tx.product.findUnique({ where: { id } })
+        if (!product) throw new NotFoundError('Producto no encontrado')
+
+        const newOrder = displayOrder
+        const prevOrder = product.displayOrder
+
+        if (newOrder === prevOrder) return
+
+        if (newOrder < prevOrder) {
+          // Mover hacia arriba: desplaza otros hacia abajo
+          await tx.product.updateMany({
+            where: {
+              displayOrder: {
+                gte: newOrder,
+                lt: prevOrder,
+              },
+            },
+            data: {
+              displayOrder: {
+                increment: 1,
+              },
+            },
+          })
+        } else {
+          // Mover hacia abajo: desplaza otros hacia arriba
+          await tx.product.updateMany({
+            where: {
+              displayOrder: {
+                lte: newOrder,
+                gt: prevOrder,
+              },
+            },
+            data: {
+              displayOrder: {
+                decrement: 1,
+              },
+            },
+          })
+        }
+
+        // Finalmente actualiza el producto
+        await tx.product.update({
+          where: { id },
+          data: { displayOrder: newOrder },
+        })
+      })
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al asignar nuevo orden manualmente')
     }
   }
 
