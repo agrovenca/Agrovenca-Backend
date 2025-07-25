@@ -11,6 +11,7 @@ import { MulterS3File } from '@/types/shared'
 import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { config } from '@/config'
 import { s3 } from '@/utils/s3/s3Uploader'
+import { pluralize } from '@/utils/pluralize'
 
 const prisma = new PrismaClient()
 const PRODUCT_IMAGE_LIMIT = 5
@@ -41,11 +42,15 @@ export class ProductImagesModel {
       const imagesCount = await prisma.image.count({
         where: { productId: product.id },
       })
-      if (imagesCount + files.length > PRODUCT_IMAGE_LIMIT) {
+      if (imagesCount === PRODUCT_IMAGE_LIMIT) {
         throw new ValidationError(
-          imagesCount > PRODUCT_IMAGE_LIMIT
-            ? `Alcanzaste el límite de ${PRODUCT_IMAGE_LIMIT} imágenes por producto`
-            : `Solo puedes subir ${PRODUCT_IMAGE_LIMIT - imagesCount} imágenes más antes de alcanzar el límite de ${PRODUCT_IMAGE_LIMIT}`,
+          `Alcanzaste el límite de ${PRODUCT_IMAGE_LIMIT} imágenes por producto`,
+        )
+      }
+      if (imagesCount + files.length > PRODUCT_IMAGE_LIMIT) {
+        const availableSpaces = PRODUCT_IMAGE_LIMIT - imagesCount
+        throw new ValidationError(
+          `Solo puedes subir ${availableSpaces} ${pluralize('im', availableSpaces, 'ágenes', 'agen')} más antes de alcanzar el límite de ${PRODUCT_IMAGE_LIMIT}`,
         )
       }
 
@@ -135,7 +140,7 @@ export class ProductImagesModel {
         }),
       ])
 
-      return updatedImages
+      return updatedImages[1]
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Error al intentar eliminar la imagen.')
