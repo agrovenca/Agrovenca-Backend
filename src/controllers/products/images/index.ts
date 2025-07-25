@@ -84,7 +84,7 @@ export class ProductImagesController {
 
       const result = await this.model.updateOrder(updatedImages)
 
-      res.status(200).json({ message: 'Orden actualizado correctamente', result })
+      res.status(200).json({ message: 'Orden actualizado correctamente', images: result })
       return
     } catch (error) {
       handleErrors({ error, res })
