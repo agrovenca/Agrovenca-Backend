@@ -42,16 +42,27 @@ export class ProductImagesModel {
       const imagesCount = await prisma.image.count({
         where: { productId: product.id },
       })
-      if (imagesCount === PRODUCT_IMAGE_LIMIT) {
-        throw new ValidationError(
-          `Alcanzaste el límite de ${PRODUCT_IMAGE_LIMIT} imágenes por producto`,
-        )
-      }
       if (imagesCount + files.length > PRODUCT_IMAGE_LIMIT) {
         const availableSpaces = PRODUCT_IMAGE_LIMIT - imagesCount
-        throw new ValidationError(
-          `Solo puedes subir ${availableSpaces} ${pluralize('im', availableSpaces, 'ágenes', 'agen')} más antes de alcanzar el límite de ${PRODUCT_IMAGE_LIMIT}`,
+
+        // Eliminar archivos recién subidos al exceder el límite
+        await Promise.all(
+          files.map((file) =>
+            s3.send(
+              new DeleteObjectCommand({
+                Bucket: AWS_STORAGE_BUCKET_NAME,
+                Key: file.key,
+              }),
+            ),
+          ),
         )
+
+        const message =
+          availableSpaces === 0
+            ? `Alcanzaste el límite de ${PRODUCT_IMAGE_LIMIT} imágenes por producto`
+            : `Solo puedes subir ${availableSpaces} ${pluralize('im', availableSpaces, 'ágenes', 'agen')} más antes de alcanzar el límite de ${PRODUCT_IMAGE_LIMIT}`
+
+        throw new ValidationError(message)
       }
 
       await prisma.image.createMany({
