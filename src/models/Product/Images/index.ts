@@ -91,12 +91,13 @@ export class ProductImagesModel {
   }
 
   static async updateOrder(
+    productId: string,
     updatedImages: { id: string; productId: string; displayOrder: number }[],
   ) {
     try {
       const updateOperations = updatedImages.map((image) =>
         prisma.image.update({
-          where: { id: image.id, productId: image.productId },
+          where: { id: image.id, productId },
           data: { displayOrder: image.displayOrder },
         }),
       )
