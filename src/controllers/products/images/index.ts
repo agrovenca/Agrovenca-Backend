@@ -58,6 +58,7 @@ export class ProductImagesController {
 
   updateOrder = async (req: Request, res: Response) => {
     try {
+      const { productId } = req.params
       const { updatedImages } = req.body
 
       if (!Array.isArray(updatedImages)) {
@@ -68,21 +69,17 @@ export class ProductImagesController {
       }
 
       const hasInvalidItem = updatedImages.some(
-        (item) =>
-          typeof item.id !== 'string' ||
-          typeof item.productId !== 'string' ||
-          typeof item.displayOrder !== 'number',
+        (item) => typeof item.id !== 'string' || typeof item.displayOrder !== 'number',
       )
 
       if (hasInvalidItem) {
         res.status(400).json({
-          error:
-            'Cada imagen debe tener un "id" (string), "productId" (string) y un "displayOrder" (number)',
+          error: 'Cada imagen debe tener un "id" (string) y un "displayOrder" (number)',
         })
         return
       }
 
-      const result = await this.model.updateOrder(updatedImages)
+      const result = await this.model.updateOrder(productId, updatedImages)
 
       res.status(200).json({ message: 'Orden actualizado correctamente', images: result })
       return
