@@ -9,7 +9,7 @@ export const shippingRouter = () => {
 
   router.use(requireAuth)
 
-  router.get('/', controller.getAll)
+  router.get('/:userId', controller.getAll)
   router.post('/', controller.create)
   router.patch('/:id', controller.update)
   router.delete('/:id', controller.delete)

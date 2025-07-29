@@ -12,9 +12,9 @@ export class ShippingController {
   }
 
   getAll = async (req: Request, res: Response) => {
-    const { user } = req
+    const { userId } = req.params
     try {
-      const objects = await this.model.getAll({ userId: user?.id })
+      const objects = await this.model.getAll({ userId })
       res.json(objects)
     } catch (error) {
       handleErrors({ error, res })
