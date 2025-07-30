@@ -8,10 +8,9 @@ import {
 } from '@/utils/errors'
 import { ImageCreateType } from '@/schemas/images'
 import { MulterS3File } from '@/types/shared'
-import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { config } from '@/config'
-import { s3 } from '@/utils/s3/s3Uploader'
 import { pluralize } from '@/utils/pluralize'
+import { deleteS3Images } from '@/utils/s3/s3DeleteImages'
 
 const prisma = new PrismaClient()
 const PRODUCT_IMAGE_LIMIT = 5
@@ -46,16 +45,8 @@ export class ProductImagesModel {
         const availableSpaces = PRODUCT_IMAGE_LIMIT - imagesCount
 
         // Eliminar archivos recién subidos al exceder el límite
-        await Promise.all(
-          files.map((file) =>
-            s3.send(
-              new DeleteObjectCommand({
-                Bucket: AWS_STORAGE_BUCKET_NAME,
-                Key: file.key,
-              }),
-            ),
-          ),
-        )
+        const imagesToDelete = files.map((file) => ({ id: file.key, s3Key: file.key }))
+        await deleteS3Images({ images: imagesToDelete, bucket: AWS_STORAGE_BUCKET_NAME })
 
         const message =
           availableSpaces === 0
@@ -122,12 +113,7 @@ export class ProductImagesModel {
       }
 
       // 2. Eliminar en paralelo el objeto de S3 y la imagen de la base de datos
-      const deleteS3Promise = s3.send(
-        new DeleteObjectCommand({
-          Bucket: AWS_STORAGE_BUCKET_NAME,
-          Key: image.s3Key,
-        }),
-      )
+      const deleteS3Promise = deleteS3Images({ images: [image], bucket: AWS_STORAGE_BUCKET_NAME })
 
       const deleteImagePromise = prisma.image.delete({
         where: { id: imageId },
