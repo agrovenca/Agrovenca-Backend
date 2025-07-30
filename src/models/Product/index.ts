@@ -4,6 +4,8 @@ import { ProductCreateType, ProductUpdateType } from '@/schemas/products'
 import slugify from 'slugify'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
 import { ProductFilterParams } from '@/types/Product'
+import { deleteS3Images } from '@/utils/s3/s3DeleteImages'
+import { config } from '@/config'
 
 const prisma = new PrismaClient()
 
@@ -16,6 +18,8 @@ interface UpdateOrderParams {
   id: string
   displayOrder: number
 }
+
+const { AWS_STORAGE_BUCKET_NAME } = config
 
 async function generateUniqueSlug(text: string): Promise<string> {
   const baseSlug = slugify(text, { replacement: '-', lower: true, strict: true, trim: true })
@@ -57,7 +61,7 @@ export class ProductModel {
       const whereClause: Prisma.ProductWhereInput = {}
 
       if (search && search.length > 0) {
-        whereClause.name = { contains: search, mode: 'insensitive' }
+        whereClause.name = { contains: search.toLowerCase(), mode: 'insensitive' }
       }
 
       if (categoriesId && categoriesId.length > 0) {
@@ -168,9 +172,12 @@ export class ProductModel {
     try {
       const product = await prisma.product.findUnique({
         where: { id },
+        include: { images: true },
       })
 
       if (!product) throw new NotFoundError('Producto no encontrado')
+
+      await deleteS3Images({ images: product.images, bucket: AWS_STORAGE_BUCKET_NAME })
 
       const deleted = await prisma.product.delete({
         where: { id },
