@@ -7,17 +7,12 @@ import { logoutUser } from '@/utils/logoutUser'
 import { getUserRole } from '@/utils/getUserRole'
 import { transporter } from '@/utils/mailer'
 import ejs from 'ejs'
-import path from 'path'
 import { NotFoundError, ValidationError } from '@/utils/errors'
 import { validatePasswords } from '@/utils/validatePasswords'
 import { handleErrors } from '../handleErrors'
+import { resolveTemplatePath } from '@/utils/resolveTemplatePath'
 
 const { SECRET_JWT_KEY, SECRET_REFRESH_KEY, COOKIE_OPTIONS, EMAIL_FROM, FRONTEND_URL } = config
-
-const resolveTemplatePath = (relativePath: string) => {
-  const basePath = process.env.NODE_ENV === 'production' ? 'build' : 'src'
-  return path.join(process.cwd(), basePath, relativePath)
-}
 
 export class AuthController {
   private model: typeof AuthModel
