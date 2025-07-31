@@ -12,7 +12,7 @@
       padding: 0;
     }
     .container {
-      max-width: 600px;
+      max-width: calc(100% - 10rem);
       margin: 40px auto;
       background-color: #ffffff;
       padding: 40px;
@@ -63,6 +63,25 @@
       margin-top: 40px;
     }
 
+    .customUserOrderTable {
+      width: 100%
+    }
+
+    .customUserOrderTable tr th {
+      padding-inline: 10px;
+      text-align: center;
+
+      &:first-of-type {
+        text-align: left;
+        padding-inline: 0;
+      }
+    }
+
+    .customUserOrderTable tr td:not(:first-of-type) {
+      padding-inline: 10px;
+      text-align: center;
+    }
+
     /* Responsive */
     @media (max-width: 620px) {
       .container {
@@ -90,7 +109,7 @@
 
     <p>Este es el resumen de tu orden:</p>
 
-    <table class="table">
+    <table class="customUserOrderTable">
       <thead>
         <tr>
           <th>Producto</th>
