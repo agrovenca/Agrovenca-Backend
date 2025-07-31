@@ -5,6 +5,7 @@ import { validateOrderCreate } from '@/schemas/orders'
 import { resolveTemplatePath } from '@/utils/resolveTemplatePath'
 import { getHtmlForEmailTemplate } from '@/utils/getHtmlForEmailTemplate'
 import { sendUserEmail } from '@/utils/sendUserEmail'
+import { AuthModel } from '@/models/Auth'
 
 const orderResumeTempPath = resolveTemplatePath('templates/order-resume.ejs')
 
@@ -55,11 +56,15 @@ export class OrderController {
         return
       }
 
+      const { name: userName, lastName: userLastName } = await AuthModel.loginByEmail({
+        email: user.email,
+      })
+
       const variables = {
         orderTotal: result.data.total,
         orderItems: result.data.products,
         currentYear: new Date().getFullYear(),
-        userName: `${user.name} ${user.lastName}`,
+        userName: userName + ' ' + userLastName,
       }
 
       const html = await getHtmlForEmailTemplate(orderResumeTempPath, variables)
