@@ -3,12 +3,10 @@ import { Request, Response } from 'express'
 import { handleErrors } from '../handleErrors'
 import { validateOrderCreate } from '@/schemas/orders'
 import { resolveTemplatePath } from '@/utils/resolveTemplatePath'
-import ejs from 'ejs'
-import { config } from '@/config'
-import { transporter } from '@/utils/mailer'
+import { getHtmlForEmailTemplate } from '@/utils/getHtmlForEmailTemplate'
+import { sendUserEmail } from '@/utils/sendUserEmail'
 
-const templatePath = resolveTemplatePath('templates/order-resume.ejs')
-const { EMAIL_FROM } = config
+const orderResumeTempPath = resolveTemplatePath('templates/order-resume.ejs')
 
 export class OrderController {
   private model: typeof OrderModel
@@ -57,19 +55,15 @@ export class OrderController {
         return
       }
 
-      const html = await ejs.renderFile(templatePath, {
+      const variables = {
         orderTotal: result.data.total,
         orderItems: result.data.products,
         currentYear: new Date().getFullYear(),
         userName: `${user.name} ${user.lastName}`,
-      })
+      }
 
-      await transporter.sendMail({
-        html,
-        to: user.email,
-        subject: 'Resumen de orden',
-        from: `Agrovenca <${EMAIL_FROM}>`,
-      })
+      const html = await getHtmlForEmailTemplate(orderResumeTempPath, variables)
+      await sendUserEmail({ toEmail: user.email, subject: 'Resumen de orden', html })
 
       const newOrder = await this.model.create({ data: result.data, userId: user.id })
       res.status(201).send({ order: newOrder, message: 'Orden creada correctamente' })
