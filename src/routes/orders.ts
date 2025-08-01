@@ -8,7 +8,7 @@ export const ordersRouter = () => {
   const controller = new OrderController({ model: OrderModel })
 
   router.use(requireAuth)
-  router.get('/', controller.getAll)
+  router.get('/:userId', controller.getAllByUser)
   router.get('/:id', controller.getOrderById)
   router.post('/', controller.create)
 
