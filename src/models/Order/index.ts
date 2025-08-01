@@ -116,6 +116,18 @@ export class OrderModel {
           },
         },
       })
+
+      if (couponId) {
+        await prisma.coupon.update({
+          where: { id: couponId },
+          data: {
+            timesUsed: {
+              increment: 1,
+            },
+          },
+        })
+      }
+
       return newOrder
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
