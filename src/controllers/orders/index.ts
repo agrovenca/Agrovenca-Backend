@@ -16,14 +16,10 @@ export class OrderController {
     this.model = model
   }
 
-  getAll = async (req: Request, res: Response) => {
-    const { user } = req
+  getAllByUser = async (req: Request, res: Response) => {
+    const { userId } = req.params
     try {
-      if (!user) {
-        res.status(401).json({ error: 'Usuario no autenticado' })
-        return
-      }
-      const objects = await this.model.getAll({ userId: user.id })
+      const objects = await this.model.getAllByUser({ userId })
       res.status(200).send(objects)
     } catch (error) {
       handleErrors({ error, res })

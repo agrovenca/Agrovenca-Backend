@@ -5,7 +5,7 @@ import { Prisma, PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export class OrderModel {
-  static async getAll({ userId }: { userId: string }) {
+  static async getAllByUser({ userId }: { userId: string }) {
     try {
       const orders = await prisma.order.findMany({
         where: { userId },
@@ -114,6 +114,24 @@ export class OrderModel {
           user: {
             connect: { id: userId },
           },
+        },
+        include: {
+          shipping: true,
+          items: {
+            select: {
+              id: true,
+              productId: true,
+              quantity: true,
+              price: true,
+              product: {
+                select: {
+                  name: true,
+                  images: true,
+                },
+              },
+            },
+          },
+          coupon: true,
         },
       })
 
