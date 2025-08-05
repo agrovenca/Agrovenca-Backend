@@ -3,7 +3,7 @@ import cors from 'cors'
 const ACCEPTED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://api.avengers.com',
+  'https://1rzr331r-5173.use.devtunnels.ms',
 ]
 
 export const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) =>
