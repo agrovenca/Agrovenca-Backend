@@ -16,6 +16,15 @@ export class OrderController {
     this.model = model
   }
 
+  getAllOrders = async (_req: Request, res: Response) => {
+    try {
+      const objects = await this.model.getAllOrders()
+      res.status(200).send(objects)
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
   getAllByUser = async (req: Request, res: Response) => {
     const { userId } = req.params
     try {
