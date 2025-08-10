@@ -4,35 +4,61 @@ import { Prisma, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+const include = {
+  items: {
+    select: {
+      id: true,
+      productId: true,
+      quantity: true,
+      price: true,
+      product: {
+        select: {
+          name: true,
+          images: true,
+        },
+      },
+    },
+  },
+  shipping: true,
+  coupon: {
+    select: {
+      code: true,
+      discount: true,
+    },
+  },
+  user: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      lastName: true,
+    },
+  },
+}
+
 export class OrderModel {
+  static async getAllOrders() {
+    try {
+      const orders = await prisma.order.findMany({
+        orderBy: [{ createdAt: 'desc' }],
+        include: include,
+      })
+
+      if (!orders || orders.length === 0) throw new NotFoundError('No se encontraron órdenes')
+
+      return orders
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar obtener las órdenes')
+    }
+  }
+
   static async getAllByUser({ userId }: { userId: string }) {
     try {
       const orders = await prisma.order.findMany({
         where: { userId },
         orderBy: [{ createdAt: 'desc' }],
-        include: {
-          items: {
-            select: {
-              id: true,
-              productId: true,
-              quantity: true,
-              price: true,
-              product: {
-                select: {
-                  name: true,
-                  images: true,
-                },
-              },
-            },
-          },
-          shipping: true,
-          coupon: {
-            select: {
-              code: true,
-              discount: true,
-            },
-          },
-        },
+        include: include,
       })
 
       if (!orders || orders.length === 0) throw new NotFoundError('No se encontraron órdenes')

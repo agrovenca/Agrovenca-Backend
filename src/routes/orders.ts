@@ -1,5 +1,5 @@
 import { OrderController } from '@/controllers/orders'
-import { requireAuth } from '@/middlewares/auth'
+import { requireAuth, requireRole } from '@/middlewares/auth'
 import { OrderModel } from '@/models/Order'
 import { Router } from 'express'
 
@@ -12,7 +12,8 @@ export const ordersRouter = () => {
   router.get('/:id', controller.getOrderById)
   router.post('/', controller.create)
 
-  // router.use(requireRole)
+  router.use(requireRole)
+  router.get('/', controller.getAllOrders)
   // router.patch('/:id', controller.update)
   // router.delete('/:id', controller.delete)
 
