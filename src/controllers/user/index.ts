@@ -21,12 +21,14 @@ export class UserController {
     const { limit, page, search } = getCommonQueryFilters(req.query)
     const isActive = req.query.isActive as UserFilterParams['isActive']
 
-    const offset = (page - 1) * limit
+    const numericLimit = limit === 0 ? undefined : Number(limit)
+
+    const offset = numericLimit ? (page - 1) * numericLimit : undefined
 
     try {
       const { objects, totalItems } = await this.model.getAll({
         offset,
-        limit,
+        limit: numericLimit,
         search,
         isActive,
       })

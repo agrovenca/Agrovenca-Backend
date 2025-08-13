@@ -20,12 +20,15 @@ export class UserModel {
     try {
       const whereClause: Prisma.UserWhereInput = {}
 
-      if (search) {
-        whereClause.name = { contains: search, mode: 'insensitive' }
-        whereClause.email = { contains: search, mode: 'insensitive' }
+      if (search && search.length > 0) {
+        whereClause.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+        ]
       }
 
-      if (isActive) {
+      if (isActive !== undefined) {
         whereClause.isActive = isActive === 'active'
       }
 
