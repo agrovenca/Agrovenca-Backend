@@ -18,8 +18,22 @@ export const ProductCreateSchema = z.object({
 
 export const ProductUpdateSchema = ProductCreateSchema.partial()
 
+export const ChangePricesSchema = z.object({
+  percentage: z
+    .number({
+      required_error: 'El porcentaje es requerido',
+      invalid_type_error: 'El porcentaje debe ser un número',
+    })
+    .gt(0, { message: 'El porcentaje debe ser mayor a 0' }),
+  increment: z.boolean({
+    required_error: 'El campo increment es requerido',
+    invalid_type_error: 'El campo increment debe ser true o false',
+  }),
+})
+
 export type ProductCreateType = z.infer<typeof ProductCreateSchema>
 export type ProductUpdateType = z.infer<typeof ProductUpdateSchema>
+export type ChangePricesType = z.infer<typeof ChangePricesSchema>
 
 export const validateProductCreate = (product: ProductCreateType) => {
   return ProductCreateSchema.safeParse(product)
@@ -27,4 +41,8 @@ export const validateProductCreate = (product: ProductCreateType) => {
 
 export const validateProductUpdate = (product: ProductUpdateType) => {
   return ProductUpdateSchema.partial().safeParse(product)
+}
+
+export const validateChangePrices = (data: ChangePricesType) => {
+  return ChangePricesSchema.safeParse(data)
 }

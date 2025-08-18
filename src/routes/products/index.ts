@@ -16,10 +16,13 @@ export const productsRouter = () => {
   router.use(requireRole)
 
   router.get('/export/:format', controller.export)
+
   router.post('/', controller.create)
+  router.patch('/updatePrices', controller.updatePrices)
   router.patch('/order', controller.updateOrder)
   router.patch('/orderManual/:id', controller.updateOrderManual)
   router.patch('/:id', controller.update)
+
   router.delete('/:id', controller.delete)
 
   router.use('/images', createProductImagesRouter())

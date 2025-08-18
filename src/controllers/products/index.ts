@@ -1,6 +1,10 @@
 import { handleErrors } from '@/controllers/handleErrors'
 import { CartItem, ProductModel } from '@/models/Product'
-import { validateProductCreate, validateProductUpdate } from '@/schemas/products'
+import {
+  validateChangePrices,
+  validateProductCreate,
+  validateProductUpdate,
+} from '@/schemas/products'
 import { NotFoundError } from '@/utils/errors'
 import { Request, Response } from 'express'
 import { exportDataToExcel, ExportDataToExcelType } from '@/utils/export/excel'
@@ -262,5 +266,22 @@ export class ProductsController {
       items: validatedItems,
       message: 'Productos del carrito validados',
     })
+  }
+
+  updatePrices = async (req: Request, res: Response) => {
+    try {
+      const result = validateChangePrices(req.body)
+
+      if (!result.success) {
+        res.status(400).json({ error: JSON.parse(result.error.message) })
+        return
+      }
+
+      const affected = await this.model.updatePrices(result.data)
+
+      res.status(200).json({ message: 'Precios actualizados correctamente', count: affected })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
   }
 }
