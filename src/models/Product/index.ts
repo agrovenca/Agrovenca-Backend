@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { AppError, ConflictError, NotFoundError, ServerError } from '@/utils/errors'
-import { ProductCreateType, ProductUpdateType } from '@/schemas/products'
+import { ChangePricesType, ProductCreateType, ProductUpdateType } from '@/schemas/products'
 import slugify from 'slugify'
 import { getDataForUpdate } from '@/utils/getDataForUpdate'
 import { ProductFilterParams } from '@/types/Product'
@@ -315,6 +315,28 @@ export class ProductModel {
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Error al validar los productos del carrito')
+    }
+  }
+
+  static async updatePrices({ percentage, increment }: ChangePricesType) {
+    try {
+      // TODO: Fix reversibility
+      // multiply: 1 + percentage/100 // To increase.
+      // multiply: 1 - percentage/100 // To decrease.
+      const changeValue = 1 + percentage / 100
+      const operation = increment ? { multiply: changeValue } : { divide: changeValue }
+
+      const { count: affected } = await prisma.product.updateMany({
+        data: {
+          price: operation,
+          secondPrice: operation,
+        },
+      })
+
+      return affected
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar actualizar los precios de productos')
     }
   }
 }
