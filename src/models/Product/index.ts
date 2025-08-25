@@ -323,6 +323,8 @@ export class ProductModel {
       // TODO: Fix reversibility
       // multiply: 1 + percentage/100 // To increase.
       // multiply: 1 - percentage/100 // To decrease.
+      // const changeValue = increment ? 1 + percentage / 100 : 1 + percentage / 100
+      // const operation = { multiply: changeValue }
       const changeValue = 1 + percentage / 100
       const operation = increment ? { multiply: changeValue } : { divide: changeValue }
 
