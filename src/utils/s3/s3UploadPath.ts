@@ -18,3 +18,12 @@ export function getProductImageS3Key(productSlug: string, filename: string) {
   const key = `media/Product/${productSlug}/Images/${safeName}.${ext}`
   return key
 }
+
+export function getOrderPaymentImageS3Key(createdAtString: string, file: Express.Multer.File) {
+  const ext = file.mimetype.split('/')[1]
+  const baseName = file.originalname.replace(/\.[^/.]+$/, '')
+  const safeName = slugify(baseName)
+
+  const key = `media/Order/${createdAtString}/${safeName}.${ext}`
+  return key
+}

@@ -1,11 +1,13 @@
 import { OrderModel } from '@/models/Order'
 import { Request, Response } from 'express'
 import { handleErrors } from '../handleErrors'
-import { validateOrderCreate } from '@/schemas/orders'
+import { validateOrderCreate, validatePaymentCreate } from '@/schemas/orders'
 import { resolveTemplatePath } from '@/utils/resolveTemplatePath'
 import { getHtmlForEmailTemplate } from '@/utils/getHtmlForEmailTemplate'
 import { sendUserEmail } from '@/utils/sendUserEmail'
 import { AuthModel } from '@/models/Auth'
+import { MulterS3File } from '@/types/shared'
+import { ValidationError } from '@/utils/errors'
 
 const orderResumeTempPath = resolveTemplatePath('templates/order-resume.ejs')
 
@@ -77,6 +79,30 @@ export class OrderController {
 
       const newOrder = await this.model.create({ data: result.data, userId: user.id })
       res.status(201).send({ order: newOrder, message: 'Orden creada correctamente' })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
+  createPayment = async (req: Request, res: Response) => {
+    const { orderId, userId } = req.params
+    const file = req.file as MulterS3File
+
+    try {
+      if (!orderId) throw new ValidationError('No se encontró el ID de la orden')
+      if (!userId) throw new ValidationError('No se encontró el ID del usuario')
+
+      const result = validatePaymentCreate({ receipt: file })
+      if (!result.success || !result.data) {
+        res.status(400).json({ error: JSON.parse(result.error.message) })
+        return
+      }
+
+      const newPayment = await this.model.createPayment({ orderId, userId, data: result.data })
+      res.status(201).json({
+        message: 'Comrpobante cargado',
+        newPayment,
+      })
     } catch (error) {
       handleErrors({ error, res })
     }
