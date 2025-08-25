@@ -1,6 +1,6 @@
 import { ProductImagesController } from '@/controllers/products/images'
 import { ProductImagesModel } from '@/models/Product/Images'
-import { getMulterS3Upload } from '@/utils/s3/s3Uploader'
+import { getMulterS3ProductUpload } from '@/utils/s3/s3Uploader'
 import { Router } from 'express'
 
 export const createProductImagesRouter = () => {
@@ -13,7 +13,7 @@ export const createProductImagesRouter = () => {
     '/:productId',
     async (req, res, next) => {
       const productId = req.params.productId
-      const upload = getMulterS3Upload(productId).array('files')
+      const upload = getMulterS3ProductUpload(productId).array('files')
 
       upload(req, res, (err) => {
         if (err) {

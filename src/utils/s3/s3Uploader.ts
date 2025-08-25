@@ -1,7 +1,7 @@
 import multer from 'multer'
 import multerS3 from 'multer-s3'
 import { S3Client } from '@aws-sdk/client-s3'
-import { getProductImageS3Key } from './s3UploadPath'
+import { getOrderPaymentImageS3Key, getProductImageS3Key } from './s3UploadPath'
 import { PrismaClient } from '@prisma/client'
 import { config } from '@/config'
 
@@ -23,7 +23,7 @@ export const s3 = new S3Client({
   },
 })
 
-export const getMulterS3Upload = (productId: string) => {
+export const getMulterS3ProductUpload = (productId: string) => {
   return multer({
     storage: multerS3({
       s3: s3,
@@ -33,9 +33,31 @@ export const getMulterS3Upload = (productId: string) => {
       key: async (_req, file, cb) => {
         try {
           const product = await prisma.product.findUnique({ where: { id: productId } })
-          if (!product || !product.slug) return cb(new Error('Producto no encontrado'), '')
+          if (!product) return cb(new Error('Producto no encontrado'), '')
 
           const key = getProductImageS3Key(product.slug, file.originalname)
+          cb(null, key)
+        } catch (err) {
+          cb(err as Error, '')
+        }
+      },
+    }),
+  })
+}
+
+export const getMulterS3OrderUpload = (orderId: string) => {
+  return multer({
+    storage: multerS3({
+      s3: s3,
+      bucket: AWS_STORAGE_BUCKET_NAME,
+      acl: 'public-read',
+      contentType: multerS3.AUTO_CONTENT_TYPE,
+      key: async (_req, file, cb) => {
+        try {
+          const order = await prisma.order.findUnique({ where: { id: orderId } })
+          if (!order) return cb(new Error('Orden no encontrada'), '')
+
+          const key = getOrderPaymentImageS3Key(order.createdAt.toISOString(), file)
           cb(null, key)
         } catch (err) {
           cb(err as Error, '')
