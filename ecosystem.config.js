@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: "api",
-            script: "build/index.js",
+            script: "/root/api/current/build/index.js",
             instances: "max",
             exec_mode: "cluster",
             env_production: {
