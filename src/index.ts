@@ -23,7 +23,7 @@ app.use(cookieParser())
 app.use((req, res, next) => authMiddleware(req, res, next))
 
 app.get('/', (_req, res) => {
-  res.send('🚀 API successfully running!')
+  res.send('🚀 Yuju the API successfully running!')
 })
 
 app.use('/auth', createAuthRouter())
