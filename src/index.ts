@@ -26,15 +26,15 @@ app.get('/', (_req, res) => {
   res.send('Hello World!')
 })
 
-app.use('/api/auth', createAuthRouter())
-app.use('/api/users', createUserRouter())
+app.use('/auth', createAuthRouter())
+app.use('/users', createUserRouter())
 
-app.use('/api/categories', categoriesRouter())
-app.use('/api/coupons', couponsRouter())
-app.use('/api/unities', unitiesRouter())
-app.use('/api/products', productsRouter())
-app.use('/api/shippings', shippingRouter())
-app.use('/api/orders', ordersRouter())
+app.use('/categories', categoriesRouter())
+app.use('/coupons', couponsRouter())
+app.use('/unities', unitiesRouter())
+app.use('/products', productsRouter())
+app.use('/shippings', shippingRouter())
+app.use('/orders', ordersRouter())
 
 app.use((_req, res, _next) => {
   res.status(404).json({ error: 'Not Found' })
