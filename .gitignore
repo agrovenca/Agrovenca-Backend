@@ -28,4 +28,4 @@ node_modules
 .venv.local
 
 uploads
-src/seed/json/*
+src/seed/
