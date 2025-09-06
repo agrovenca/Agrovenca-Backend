@@ -4,6 +4,7 @@
   "description": "",
   "main": "./src/index.ts",
   "scripts": {
+    "build": "tsc && node copy-templates.js",
     "tsc": "tsc && node copy-templates.js",
     "dev": "ts-node-dev -r tsconfig-paths/register ./src/index.ts",
     "start": "node ./build/index.js",
