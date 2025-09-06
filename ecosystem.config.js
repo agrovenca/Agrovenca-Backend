@@ -3,6 +3,7 @@ module.exports = {
         {
             name: "api",
             script: "build/index.js",
+            cwd: "/root/api/current",
             instances: "max",
             exec_mode: "cluster",
             env_production: {
