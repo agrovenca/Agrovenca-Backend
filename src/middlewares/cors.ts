@@ -1,6 +1,6 @@
 import cors from 'cors'
 
-const ACCEPTED_ORIGINS = ['http://localhost:5173', 'https://agrovenca.com']
+const ACCEPTED_ORIGINS = ['http://localhost:5173', 'http://localhost:3000', 'https://agrovenca.com']
 
 export const corsMiddleware = ({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) =>
   cors({
