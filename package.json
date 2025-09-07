@@ -17,7 +17,8 @@
     "register:categories": "ts-node-dev -r tsconfig-paths/register ./src/seed/categories.ts",
     "register:unities": "ts-node-dev -r tsconfig-paths/register ./src/seed/unities.ts",
     "register:products": "ts-node-dev -r tsconfig-paths/register ./src/seed/products.ts",
-    "register:productImages": "ts-node-dev -r tsconfig-paths/register ./src/seed/productImages.ts"
+    "register:productImages": "ts-node-dev -r tsconfig-paths/register ./src/seed/productImages.ts",
+    "makeImagesPublic": "ts-node-dev -r tsconfig-paths/register ./src/makeAllImagesPublic.ts"
   },
   "keywords": [],
   "author": "",
