@@ -17,6 +17,8 @@ interface Config {
   EMAIL_USER: string
   EMAIL_PASSWORD: string
   EMAIL_SECURE: string
+  EMAIL_HOST: string
+  EMAIL_PORT: string
   FRONTEND_URL: string
   AWS_ACCESS_KEY_ID: string
   AWS_SECRET_ACCESS_KEY: string
@@ -40,6 +42,8 @@ export const config: Config = {
   EMAIL_USER: process.env.EMAIL_USER as string,
   EMAIL_PASSWORD: process.env.EMAIL_PASSWORD as string,
   EMAIL_SECURE: process.env.EMAIL_SECURE as string,
+  EMAIL_HOST: process.env.EMAIL_HOST as string,
+  EMAIL_PORT: process.env.EMAIL_PORT as string,
   FRONTEND_URL: process.env.FRONTEND_URL as string,
   AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID as string,
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY as string,
