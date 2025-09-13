@@ -1,1 +1,0 @@
-* In Shipping Address module use *react-phone-number-input* for country and phone info.
