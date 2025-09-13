@@ -2,6 +2,8 @@ import { AppError } from '@/utils/errors'
 import { Response } from 'express'
 
 export const handleErrors = ({ error, res }: { error: unknown; res: Response }) => {
+  console.error(`[${new Date().toISOString()}] ERROR en ${res.req.method} ${res.req.url}:`, error)
+
   if (error instanceof AppError) {
     res.status(error.statusCode).json({ error: error.message })
     return
