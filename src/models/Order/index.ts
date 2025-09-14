@@ -51,8 +51,6 @@ export class OrderModel {
         include,
       })
 
-      if (!orders || orders.length === 0) throw new NotFoundError('No se encontraron órdenes')
-
       return orders
     } catch (error) {
       if (error instanceof AppError) throw error
@@ -67,8 +65,6 @@ export class OrderModel {
         orderBy: [{ createdAt: 'desc' }],
         include: include,
       })
-
-      if (!orders || orders.length === 0) throw new NotFoundError('No se encontraron órdenes')
 
       return orders
     } catch (error) {
