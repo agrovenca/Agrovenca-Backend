@@ -13,6 +13,7 @@ import { shippingRouter } from './routes/shipping'
 import { ordersRouter } from './routes/orders'
 import { loggerMiddleware } from './middlewares/logger'
 import { errorHandler } from './middlewares/errorHandler'
+import { contactRouter } from './routes/contacts'
 
 const { PORT } = config
 
@@ -28,6 +29,8 @@ app.use((req, res, next) => authMiddleware(req, res, next))
 app.get('/', (_req, res) => {
   res.send('🚀 Yuju the API successfully running!')
 })
+
+app.use('/contacts', contactRouter())
 
 app.use('/auth', createAuthRouter())
 app.use('/users', createUserRouter())
