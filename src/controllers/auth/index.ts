@@ -108,13 +108,27 @@ export class AuthController {
 
   resetPasswordSend = async (req: Request, res: Response) => {
     const { email } = req.body
+    const { captchaToken } = req.body
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!captchaToken) {
+      res.status(400).json({ success: false, message: 'Captcha es requerido' })
+      return
+    }
 
     if (!email) throw new ValidationError('Correo electrónico es obligatorio')
 
     if (!emailRegex.test(email)) throw new ValidationError('Correo electrónico incorrecto')
 
     try {
+      const challenge = await verifyCloudflareChallenge(captchaToken)
+
+      if (!challenge.success) {
+        res.status(400).json({ success: false, message: 'Captcha inválido' })
+        return
+      }
+
       const user = await this.model.loginByEmail({ email })
       if (!user) throw new NotFoundError('Usuario no encontrado')
 
