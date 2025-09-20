@@ -5,8 +5,9 @@ import { transporter } from '@/utils/mailer'
 import ejs from 'ejs'
 import { resolveTemplatePath } from '@/utils/resolveTemplatePath'
 import { config } from '@/config'
+import { verifyCloudflareChallenge } from '@/utils/verifyCloudflareChallenge'
 
-const { EMAIL_FROM, TURNSTILE_SECRET_KEY } = config
+const { EMAIL_FROM } = config
 
 export class HomeController {
   sendMessage = async (req: Request, res: Response) => {
@@ -18,18 +19,9 @@ export class HomeController {
     }
 
     try {
-      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          secret: TURNSTILE_SECRET_KEY,
-          response: captchaToken,
-        }),
-      })
+      const challenge = await verifyCloudflareChallenge(captchaToken)
 
-      const outcome = await verifyRes.json()
-
-      if (!outcome.success) {
+      if (!challenge.success) {
         res.status(400).json({ success: false, message: 'Captcha inválido' })
         return
       }
