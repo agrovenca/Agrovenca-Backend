@@ -11,6 +11,7 @@ import { NotFoundError, ValidationError } from '@/utils/errors'
 import { validatePasswords } from '@/utils/validatePasswords'
 import { handleErrors } from '../handleErrors'
 import { resolveTemplatePath } from '@/utils/resolveTemplatePath'
+import { verifyCloudflareChallenge } from '@/utils/verifyCloudflareChallenge'
 
 const { SECRET_JWT_KEY, SECRET_REFRESH_KEY, COOKIE_OPTIONS, EMAIL_FROM, FRONTEND_URL } = config
 
@@ -22,16 +23,30 @@ export class AuthController {
   }
 
   login = async (req: Request, res: Response) => {
-    const result = validateUserLogin(req.body)
+    const { captchaToken } = req.body
 
-    if (!result.success || !result.data) {
-      res.status(400).json({ error: JSON.parse(result.error.message) })
+    if (!captchaToken) {
+      res.status(400).json({ success: false, message: 'Captcha es requerido' })
       return
     }
 
-    const { email, password } = result.data
-
     try {
+      const challenge = await verifyCloudflareChallenge(captchaToken)
+
+      if (!challenge.success) {
+        res.status(400).json({ success: false, message: 'Captcha inválido' })
+        return
+      }
+
+      const result = validateUserLogin(req.body)
+
+      if (!result.success || !result.data) {
+        res.status(400).json({ error: JSON.parse(result.error.message) })
+        return
+      }
+
+      const { email, password } = result.data
+
       const user = await this.model.loginByEmail({ email, checkPassword: password })
       const role = await getUserRole(user)
       const token = sign({ id: user.id, email: user.email, role }, SECRET_JWT_KEY, {
@@ -58,7 +73,21 @@ export class AuthController {
   }
 
   create = async (req: Request, res: Response): Promise<void> => {
+    const { captchaToken } = req.body
+
+    if (!captchaToken) {
+      res.status(400).json({ success: false, message: 'Captcha es requerido' })
+      return
+    }
+
     try {
+      const challenge = await verifyCloudflareChallenge(captchaToken)
+
+      if (!challenge.success) {
+        res.status(400).json({ success: false, message: 'Captcha inválido' })
+        return
+      }
+
       const result = validateUser(req.body)
 
       if (!result.success || !result.data) {
