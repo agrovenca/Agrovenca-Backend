@@ -25,6 +25,7 @@ interface Config {
   AWS_STORAGE_BUCKET_NAME: string
   AWS_S3_REGION_NAME: string
   AWS_S3_ENDPOINT_URL: string
+  TURNSTILE_SECRET_KEY: string
 }
 
 export const config: Config = {
@@ -50,4 +51,5 @@ export const config: Config = {
   AWS_STORAGE_BUCKET_NAME: process.env.AWS_STORAGE_BUCKET_NAME as string,
   AWS_S3_REGION_NAME: process.env.AWS_S3_REGION_NAME as string,
   AWS_S3_ENDPOINT_URL: process.env.AWS_S3_ENDPOINT_URL as string,
+  TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY as string,
 }
