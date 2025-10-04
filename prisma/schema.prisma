@@ -184,7 +184,7 @@ model OrderItem {
 model OrderPayment {
   id        String        @id @default(uuid())
   orderId   String        @unique
-  status    PaymentStatus @default(PENDING)
+  status    PaymentStatus @default(UNPAID)
   receipt   String        @db.VarChar(800)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -202,8 +202,8 @@ enum OrderStatus {
 }
 
 enum PaymentStatus {
-  PENDING
+  UNPAID
+  PROCESSING
   PAID
   REFUNDED
-  FAILED
 }
