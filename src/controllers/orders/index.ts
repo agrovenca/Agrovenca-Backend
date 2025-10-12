@@ -1,13 +1,19 @@
 import { OrderModel } from '@/models/Order'
 import { Request, Response } from 'express'
 import { handleErrors } from '../handleErrors'
-import { validateOrderCreate, validatePaymentCreate } from '@/schemas/orders'
+import {
+  validateOrderAdminUpdate,
+  validateOrderCreate,
+  validatePaymentCreate,
+} from '@/schemas/orders'
 import { resolveTemplatePath } from '@/utils/resolveTemplatePath'
 import { getHtmlForEmailTemplate } from '@/utils/getHtmlForEmailTemplate'
 import { sendUserEmail } from '@/utils/sendUserEmail'
 import { AuthModel } from '@/models/Auth'
 import { MulterS3File } from '@/types/shared'
-import { ValidationError } from '@/utils/errors'
+import { NotFoundError, ValidationError } from '@/utils/errors'
+import { getCommonQueryFilters } from '@/utils/getCommonQueryFilters'
+import { getPaginationData } from '@/utils/getPaginationData'
 
 const orderResumeTempPath = resolveTemplatePath('templates/order-resume.ejs')
 
@@ -18,10 +24,27 @@ export class OrderController {
     this.model = model
   }
 
-  getAllOrders = async (_req: Request, res: Response) => {
+  getAllOrders = async (req: Request, res: Response) => {
     try {
-      const objects = await this.model.getAllOrders()
-      res.status(200).send(objects)
+      const { limit, page, search } = getCommonQueryFilters(req.query)
+
+      const numericLimit = limit === 0 ? undefined : Number(limit)
+      const offset = numericLimit ? (page - 1) * numericLimit : undefined
+
+      const { objects, totalItems } = await this.model.getAllOrders({
+        offset,
+        limit: numericLimit,
+        search,
+      })
+
+      const totalPages = numericLimit ? Math.ceil(totalItems / numericLimit) : 1
+
+      res.status(200).json({
+        objects,
+        pagination: {
+          ...getPaginationData({ page, totalItems, totalPages }),
+        },
+      })
     } catch (error) {
       handleErrors({ error, res })
     }
@@ -101,8 +124,28 @@ export class OrderController {
       const newPayment = await this.model.createPayment({ orderId, userId, data: result.data })
       res.status(201).json({
         message: 'Comrpobante cargado',
-        newPayment,
+        payment: newPayment,
       })
+    } catch (error) {
+      handleErrors({ error, res })
+    }
+  }
+
+  updateStatus = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params
+      const data = req.body
+      const result = validateOrderAdminUpdate(data)
+
+      if (!result.success) {
+        res.status(400).json({ error: JSON.parse(result.error.message) })
+        return
+      }
+
+      const updatedObject = await this.model.updateStatus({ id, data: result.data })
+      if (!updatedObject) throw new NotFoundError('Orden no encontrada')
+
+      res.status(200).json({ order: updatedObject, message: 'Orden actualizada exitosamente' })
     } catch (error) {
       handleErrors({ error, res })
     }

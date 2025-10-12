@@ -57,7 +57,7 @@ export const getMulterS3OrderUpload = (orderId: string) => {
           const order = await prisma.order.findUnique({ where: { id: orderId } })
           if (!order) return cb(new Error('Orden no encontrada'), '')
 
-          const key = getOrderPaymentImageS3Key(order.createdAt.toISOString(), file)
+          const key = getOrderPaymentImageS3Key(order.id, file)
           cb(null, key)
         } catch (err) {
           cb(err as Error, '')

@@ -31,8 +31,7 @@ export const ordersRouter = () => {
 
   router.use(requireRole)
   router.get('/', controller.getAllOrders)
-  // router.patch('/:id', controller.update)
-  // router.delete('/:id', controller.delete)
+  router.patch('/status/:id', controller.updateStatus)
 
   return router
 }

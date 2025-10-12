@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "OrderPayment" ALTER COLUMN "status" SET DEFAULT 'PROCESSING';
