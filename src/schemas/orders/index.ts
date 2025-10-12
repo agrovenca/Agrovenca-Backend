@@ -2,6 +2,21 @@ import { z } from 'zod'
 
 const MAX_FILE_SIZE = 1024 * 1024 * 5
 const ACCEPTED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png']
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  SHIPPED = 'SHIPPED',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
+  RETURNED = 'RETURNED',
+}
+
+export enum PaymentStatus {
+  UNPAID = 'UNPAID',
+  PROCESSING = 'PROCESSING',
+  PAID = 'PAID',
+  REFUNDED = 'REFUNDED',
+}
 
 export const OrderCreateSchema = z.object({
   id: z.string().regex(/^ORD-\d{20}$/),
@@ -32,6 +47,11 @@ export const OrderUpdateSchema = OrderCreateSchema.partial().omit({
   total: true,
 })
 
+export const OrderAdminUpdateSchema = z.object({
+  orderStatus: z.nativeEnum(OrderStatus).optional(),
+  paymentStatus: z.nativeEnum(PaymentStatus).optional(),
+})
+
 export const RegisterPaymentSchema = z.object({
   receipt: z.object({
     mimetype: z.string().refine((type) => ACCEPTED_IMAGE_MIME_TYPES.includes(type), {
@@ -46,6 +66,7 @@ export const RegisterPaymentSchema = z.object({
 
 export type OrderCreateType = z.infer<typeof OrderCreateSchema>
 export type OrderUpdateType = z.infer<typeof OrderUpdateSchema>
+export type OrderAdminUpdateType = z.infer<typeof OrderAdminUpdateSchema>
 export type RegisterPaymentType = z.infer<typeof RegisterPaymentSchema>
 
 export const validateOrderCreate = (order: OrderCreateType) => {
@@ -54,4 +75,8 @@ export const validateOrderCreate = (order: OrderCreateType) => {
 
 export const validatePaymentCreate = (data: RegisterPaymentType) => {
   return RegisterPaymentSchema.safeParse(data)
+}
+
+export const validateOrderAdminUpdate = (data: OrderAdminUpdateType) => {
+  return OrderAdminUpdateSchema.safeParse(data)
 }

@@ -184,7 +184,7 @@ model OrderItem {
 model OrderPayment {
   id        String        @id @default(uuid())
   orderId   String        @unique
-  status    PaymentStatus @default(UNPAID)
+  status    PaymentStatus @default(PROCESSING)
   receipt   String        @db.VarChar(800)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt

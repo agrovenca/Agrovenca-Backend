@@ -1,4 +1,5 @@
-import { OrderCreateType, RegisterPaymentType } from '@/schemas/orders'
+import { OrderAdminUpdateType, OrderCreateType, RegisterPaymentType } from '@/schemas/orders'
+import { BaseFilterParams } from '@/types/shared'
 import {
   AppError,
   ConflictError,
@@ -44,14 +45,32 @@ const include = {
 }
 
 export class OrderModel {
-  static async getAllOrders() {
+  static async getAllOrders(params: BaseFilterParams) {
     try {
-      const orders = await prisma.order.findMany({
-        orderBy: [{ createdAt: 'desc' }],
-        include,
-      })
+      const { limit: take, offset: skip, search } = params
 
-      return orders
+      const whereClause: Prisma.OrderWhereInput = {}
+
+      if (search && search.length > 0) {
+        whereClause.OR = [
+          { id: { contains: search.toLowerCase(), mode: 'insensitive' } },
+          { user: { name: { contains: search.toLowerCase(), mode: 'insensitive' } } },
+          { user: { lastName: { contains: search.toLowerCase(), mode: 'insensitive' } } },
+        ]
+      }
+
+      const [totalItems, objects] = await Promise.all([
+        prisma.order.count({ where: whereClause }),
+        prisma.order.findMany({
+          where: whereClause,
+          orderBy: [{ createdAt: 'desc' }],
+          include: include,
+          take,
+          skip,
+        }),
+      ])
+
+      return { objects, totalItems }
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Error al intentar obtener las órdenes')
@@ -220,6 +239,40 @@ export class OrderModel {
     } catch (error) {
       if (error instanceof AppError) throw error
       throw new ServerError('Error al intentar registrar el pago')
+    }
+  }
+
+  static async updateStatus({ id, data }: { id: string; data: OrderAdminUpdateType }) {
+    try {
+      const order = await prisma.order.findUnique({
+        where: { id },
+        select: { id: true, orderPaymentId: true },
+      })
+
+      if (!order) throw new NotFoundError('Orden no encontrada')
+
+      const payment = await prisma.orderPayment.findUnique({
+        where: { orderId: order.id },
+      })
+
+      if (payment && data.paymentStatus) {
+        await prisma.orderPayment.update({
+          where: { orderId: order.id },
+          data: { status: data.paymentStatus },
+        })
+      }
+
+      const updated = await prisma.order.update({
+        where: { id },
+        data: {
+          status: data.orderStatus,
+        },
+        include: include,
+      })
+      return updated
+    } catch (error) {
+      if (error instanceof AppError) throw error
+      throw new ServerError('Error al intentar actualizar la order')
     }
   }
 }
